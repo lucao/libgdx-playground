@@ -9,17 +9,18 @@ import com.badlogic.gdx.physics.box2d.Fixture;
 import com.badlogic.gdx.physics.box2d.FixtureDef;
 import com.badlogic.gdx.physics.box2d.World;
 
-public class Person extends MaterialObject {
-	protected Body body;
+public class Person extends MaterialObject implements Physical {
+	protected final Body body;
 
-	protected Fixture fixture;
-	
+	protected final Fixture fixture;
+
 	protected Person(Float x, Float y, Float w, Float h, Texture texture, World world) {
 		super(x, y, w, h, texture);
-		
+
 		// First we create a body definition
 		BodyDef bodyDef = new BodyDef();
-		// We set our body to dynamic, for something like ground which doesn't move we would set it to StaticBody
+		// We set our body to dynamic, for something like ground which doesn't move we
+		// would set it to StaticBody
 		bodyDef.type = BodyType.DynamicBody;
 		bodyDef.position.set(x, y);
 
@@ -36,9 +37,23 @@ public class Person extends MaterialObject {
 		fixtureDef.density = 1.0f;
 		fixtureDef.friction = 0.0f;
 		fixtureDef.restitution = 0.0f;
-		
-		this.fixture = this.body.createFixture(fixtureDef); 
+
+		this.fixture = this.body.createFixture(fixtureDef);
 		circle.dispose();
 	}
 
+	@Override
+	public void doPhysics(World world) {
+		;
+	}
+
+	@Override
+	public Body getBody() {
+		return this.body;
+	}
+
+	@Override
+	public Fixture getFixture() {
+		return this.fixture;
+	}
 }

@@ -1,4 +1,4 @@
-package br.com.lucasmteixeira.playground.game;
+package br.com.lucasmteixeira.playground.game.scenery;
 
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.math.Vector2;
@@ -9,7 +9,10 @@ import com.badlogic.gdx.physics.box2d.PolygonShape;
 import com.badlogic.gdx.physics.box2d.World;
 import com.badlogic.gdx.physics.box2d.BodyDef.BodyType;
 
-public class Ground extends MaterialObject {
+import br.com.lucasmteixeira.playground.game.MaterialObject;
+import br.com.lucasmteixeira.playground.game.Physical;
+
+public class Ground extends MaterialObject implements Physical {
 	protected Body body;
 
 	protected Fixture fixture;
@@ -31,5 +34,20 @@ public class Ground extends MaterialObject {
 		this.fixture = this.body.createFixture(groundBox, 0.0f);
 		// Clean up after ourselves
 		groundBox.dispose();
+	}
+	
+	@Override
+	public void doPhysics(World world) {
+		;
+	}
+
+	@Override
+	public Body getBody() {
+		return this.body;
+	}
+
+	@Override
+	public Fixture getFixture() {
+		return this.fixture;
 	}
 }
