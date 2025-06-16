@@ -6,9 +6,11 @@ import org.apache.commons.collections4.queue.CircularFifoQueue;
 
 import com.badlogic.gdx.ApplicationAdapter;
 import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.graphics.Camera;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.OrthographicCamera;
+import com.badlogic.gdx.graphics.PerspectiveCamera;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.utils.ScreenUtils;
@@ -26,7 +28,7 @@ import br.com.lucasmteixeira.playground.game.characters.Player;
  * platforms.
  */
 public class Main extends ApplicationAdapter {
-	private OrthographicCamera camera;
+	private Camera camera;
 	private MaterialObject followedObject;
 
 	private final static float lerp = 0.1f;
@@ -44,8 +46,8 @@ public class Main extends ApplicationAdapter {
 	@Override
 	public void create() {
 		this.aventura = new AventuraPadrao();
-		float elementWidth = WORLD_DISTANCE_UNIT * 0.2f; // 20% of viewport width
-		float elementHeight = WORLD_DISTANCE_UNIT * 0.1f; // 10% of viewport height
+		float elementWidth = WORLD_DISTANCE_UNIT * 0.5f; // 50% of viewport width
+		float elementHeight = WORLD_DISTANCE_UNIT * 0.5f; // 50% of viewport height
 		float elementX = WORLD_DISTANCE_UNIT / 2 - elementWidth / 2;
 		float elementY = WORLD_DISTANCE_UNIT / 2 - elementHeight / 2;
 		// final Player player = new Player(0f, 0f, 50f, 50f, new Texture("libgdx.png"),
@@ -60,7 +62,7 @@ public class Main extends ApplicationAdapter {
 		float worldHeight = WORLD_DISTANCE_UNIT * ((float) Gdx.graphics.getHeight() / Gdx.graphics.getWidth());
 
 		camera = new OrthographicCamera();
-		camera.position.set(player.x, player.y, 0);
+		//camera.position.set(player.x, player.y, 0);
 
 		camera.update();
 		viewport = new ExtendViewport(worldWidth, worldHeight, camera);
@@ -77,8 +79,8 @@ public class Main extends ApplicationAdapter {
 		ScreenUtils.clear(Color.DARK_GRAY);
 		this.aventura.logic(now - Main.frameTimes.peek());
 
-		camera.position.x = ((followedObject.x + followedObject.w / 2) - camera.position.x) * lerp;
-		camera.position.y = ((followedObject.y + followedObject.h / 2) - camera.position.y) * lerp;
+		//camera.position.x = ((followedObject.x + followedObject.w / 2) - camera.position.x) * lerp;
+		//camera.position.y = ((followedObject.y + followedObject.h / 2) - camera.position.y) * lerp;
 		camera.update();
 
 		batch.setProjectionMatrix(this.camera.combined);
