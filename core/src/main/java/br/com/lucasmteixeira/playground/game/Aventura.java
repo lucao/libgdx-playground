@@ -8,44 +8,39 @@ import java.util.Map;
 import com.badlogic.gdx.graphics.Camera;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.physics.box2d.World;
-import com.badlogic.gdx.utils.viewport.ExtendViewport;
+
+import br.com.lucasmteixeira.playground.Main;
 
 public class Aventura {
 	protected final Map<long[], ArrayList<GameObject>> mapGameObjects;
 	protected final World world;
 
-	private static Integer STD_ZOOM_W = 50;// 50 meters
-	private static Integer STD_ZOOM_H = 10;// 10 meters
-
-	private Float zoomRatio;
-
-	private final ExtendViewport viewport;
-
-	public ExtendViewport getViewport() {
-		return viewport;
+	protected Aventura() {
+		this.mapGameObjects = new HashMap<long[], ArrayList<GameObject>>();
+		this.world = new World(new Vector2(0, -10), true);
 	}
 
-	protected Aventura(Camera camera) {
-		this.mapGameObjects = new HashMap<>();
-		this.viewport = new ExtendViewport(10, 10);
-		this.world = new World(new Vector2(0, -10), true);
-		this.world.setGravity(new Vector2(0, 1));
-		this.zoomRatio = 1f;
+	public World getWorld() {
+		return this.world;
+	}
+
+	public void addGameObject(GameObject gameObject) {
+		long[] key = gameObject.getQuadrante();
+		if (!this.mapGameObjects.containsKey(key)) {
+			this.mapGameObjects.put(key, new ArrayList<GameObject>());
+		}
+		this.mapGameObjects.get(key).add(gameObject);
 	}
 
 	public void logic(Long deltaTime) {
 		// TODO usar coroutines para parar atualização de elementos quando demorar muito
 		// tempo
 		// TODO pegar do mapa os gameobjects que são obrigados a atualizar
-		for (List<GameObject> listOfGameObjects : mapGameObjects.values()) {
-			for (GameObject gameObject : listOfGameObjects) {
-				gameObject.play(deltaTime);
-			}
-		}
+
 		this.world.step(1 / 60f, 6, 2);// TODO usar deltaTime
 	}
 
-	public List<MaterialObject> getDrawableGameObjects() {
+	public List<MaterialObject> getDrawableGameObjects(Camera camera) {
 		// order of quadrantes
 		/**
 		 * 0 - middle middle
@@ -68,10 +63,10 @@ public class Aventura {
 		 * <p>
 		 */
 
-		final long[] middle = { Math.round(this.viewport.getCamera().position.x / GameObject.CONSTANTE_DO_QUADRANTE),
-				Math.round(this.viewport.getCamera().position.y / GameObject.CONSTANTE_DO_QUADRANTE) };
+		final long[] middle = { Math.round(camera.position.x / Main.CONSTANTE_DO_QUADRANTE),
+				Math.round(camera.position.y / Main.CONSTANTE_DO_QUADRANTE) };
 
-		List<MaterialObject> drawableGameObjects = new ArrayList<MaterialObject>();
+		final List<MaterialObject> drawableGameObjects = new ArrayList<MaterialObject>();
 		/*
 		 * for (final long[] key : new long[][] { middle, { middle[0], middle[1]++ }, {
 		 * middle[0]++, middle[1] }, { middle[0], middle[1]-- }, { middle[0],
@@ -90,16 +85,5 @@ public class Aventura {
 		}
 		return drawableGameObjects;
 
-	}
-
-	public void resize(boolean zoomIn) {
-		if (zoomIn) {
-			this.zoomRatio -= 0.5f;
-		} else {
-			this.zoomRatio += 0.5f;
-		}
-		// use true here to center the camera
-		// that's what you probably want in case of a UI
-		this.viewport.update(Math.round(zoomRatio * STD_ZOOM_W), Math.round(zoomRatio * STD_ZOOM_H), true);
 	}
 }
