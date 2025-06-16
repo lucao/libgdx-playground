@@ -11,7 +11,7 @@ import com.badlogic.gdx.physics.box2d.World;
 import com.badlogic.gdx.utils.viewport.ExtendViewport;
 
 public class Aventura {
-	protected final Map<GameObject, ArrayList<GameObject>> mapGameObjects;
+	protected final Map<long[], ArrayList<GameObject>> mapGameObjects;
 	protected final World world;
 	public final Camera camera;
 
@@ -31,7 +31,6 @@ public class Aventura {
 	}
 
 	public void logic(Long deltaTime) {
-		
 		// TODO usar coroutines para parar atualização de elementos quando demorar muito
 		// tempo
 		// TODO pegar do mapa os gameobjects que são obrigados a atualizar
@@ -42,23 +41,47 @@ public class Aventura {
 		}
 		this.world.step(1 / 60f, 6, 2);// TODO usar deltaTime
 	}
-	
-	public List<GameObject> getDrawableGameObjects() {
-		// order of quadrantes 
-		/*
+
+	public List<MaterialObject> getDrawableGameObjects() {
+		// order of quadrantes
+		/**
 		 * 0 - middle middle
+		 * <p>
 		 * 1 - top middle
+		 * <p>
 		 * 2 - top right
+		 * <p>
 		 * 3 - middle right
+		 * <p>
 		 * 4 - bottom right
+		 * <p>
 		 * 5 - middle bottom
+		 * <p>
 		 * 6 - bottom left
+		 * <p>
 		 * 7 - middle left
+		 * <p>
 		 * 8 - top left
+		 * <p>
 		 */
-		final long[] quadrantes = new long[9] {};
-		return null;
-		
+		final long[] middle = { Math.round(this.camera.position.x / GameObject.CONSTANTE_DO_QUADRANTE),
+				Math.round(this.camera.position.y / GameObject.CONSTANTE_DO_QUADRANTE) };
+
+		List<MaterialObject> drawableGameObjects = new ArrayList<MaterialObject>();
+		for (final long[] key : new long[][] { middle, { middle[0], middle[1]++ }, { middle[0]++, middle[1] },
+				{ middle[0], middle[1]-- }, { middle[0], middle[1]-- }, { middle[0]--, middle[1] },
+				{ middle[0]--, middle[1] }, { middle[0], middle[1]++ }, { middle[0], middle[1]++ } }) {
+			if (this.mapGameObjects.containsKey(key)) {
+				for (GameObject gameObject : this.mapGameObjects.get(key)) {
+					if (gameObject instanceof MaterialObject) {
+						drawableGameObjects.add((MaterialObject) gameObject);
+					}
+				}
+			}
+		}
+
+		return drawableGameObjects;
+
 	}
 
 	public void resize(boolean zoomIn) {

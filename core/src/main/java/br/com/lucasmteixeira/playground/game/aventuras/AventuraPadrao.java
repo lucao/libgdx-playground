@@ -15,6 +15,7 @@ import br.com.lucasmteixeira.playground.game.scenery.Ground;
 
 public class AventuraPadrao extends Aventura {
 	private MaterialObject followedObject;
+
 	private static List<GameObject> criarGameObjects(World world) {
 		List<GameObject> gameObjects = new ArrayList<GameObject>();
 		gameObjects.add(new Player(0f, 0f, 1f, 2f, new Texture("libgdx.png"), world));
@@ -26,22 +27,24 @@ public class AventuraPadrao extends Aventura {
 	public AventuraPadrao(Camera camera) {
 		super(camera);
 		for (GameObject gameObject : criarGameObjects(this.world)) {
-			if (!this.mapGameObjects.containsKey(gameObject)) {
-				this.mapGameObjects.put(gameObject, new ArrayList<GameObject>());
+			long[] key = gameObject.getQuadrante();
+			if (!this.mapGameObjects.containsKey(key)) {
+				this.mapGameObjects.put(key, new ArrayList<GameObject>());
 			}
-			this.mapGameObjects.get(gameObject).add(gameObject);
+			this.mapGameObjects.get(key).add(gameObject);
 		}
 
 		// TODO Auto-generated constructor stub
 	}
-	
+
 	private final static float lerp = 0.1f;
+
 	@Override
 	public void logic(Long deltaTime) {
-		camera.position.x = ((followedObject.x + followedObject.w/2)  - camera.position.x) * lerp;
-	    camera.position.y = ((followedObject.y + followedObject.h/2)  - camera.position.y) * lerp;
-	    camera.update();
-	    
+		camera.position.x = ((followedObject.x + followedObject.w / 2) - camera.position.x) * lerp;
+		camera.position.y = ((followedObject.y + followedObject.h / 2) - camera.position.y) * lerp;
+		camera.update();
+
 		super.logic(deltaTime);
 	}
 }

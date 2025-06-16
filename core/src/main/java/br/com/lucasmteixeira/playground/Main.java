@@ -15,6 +15,7 @@ import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.utils.ScreenUtils;
 
 import br.com.lucasmteixeira.playground.game.Aventura;
+import br.com.lucasmteixeira.playground.game.MaterialObject;
 import br.com.lucasmteixeira.playground.game.aventuras.AventuraPadrao;
 
 /**
@@ -37,15 +38,19 @@ public class Main extends ApplicationAdapter {
 
 	@Override
 	public void render() {
-		final Long now = Instant.now().getEpochSecond();		
-		
+		final Long now = Instant.now().getEpochSecond();
+
 		this.aventura.logic(now - Main.frameTimes.peek());
-		
+
 		ScreenUtils.clear(0.15f, 0.15f, 0.2f, 1f);
 		batch.setProjectionMatrix(this.aventura.camera.combined);
 		batch.begin();
-		// TODO draw all aventura's pertinent objects
-		// batch.draw(image, 140, 210);
+		// draw all aventura's pertinent objects
+		for (MaterialObject materialObject : this.aventura.getDrawableGameObjects()) {
+			batch.draw(materialObject.getTexture(), materialObject.x, materialObject.y, materialObject.w,
+					materialObject.h);
+		}
+
 		batch.end();
 	}
 
