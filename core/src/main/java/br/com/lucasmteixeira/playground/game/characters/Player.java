@@ -13,4 +13,10 @@ public class Player extends Person {
 		// For click/touch events
 	}
 
+	@Override
+	public void play(Long deltaTime) {
+		// TODO Auto-generated method stub
+		
+	}
+
 }

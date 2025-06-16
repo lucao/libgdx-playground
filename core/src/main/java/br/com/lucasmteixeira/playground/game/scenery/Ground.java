@@ -41,11 +41,6 @@ public class Ground extends MaterialObject implements Physical {
 		// TODO Auto-generated method stub
 		;
 	}
-	
-	@Override
-	public void doPhysics(World world) {
-		;
-	}
 
 	@Override
 	public Body getBody() {

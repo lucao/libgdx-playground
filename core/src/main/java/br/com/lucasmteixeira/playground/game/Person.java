@@ -9,7 +9,7 @@ import com.badlogic.gdx.physics.box2d.Fixture;
 import com.badlogic.gdx.physics.box2d.FixtureDef;
 import com.badlogic.gdx.physics.box2d.World;
 
-public class Person extends MaterialObject implements Physical {
+public abstract class Person extends MaterialObject implements Physical {
 	protected final Body body;
 
 	protected final Fixture fixture;
@@ -40,17 +40,6 @@ public class Person extends MaterialObject implements Physical {
 
 		this.fixture = this.body.createFixture(fixtureDef);
 		circle.dispose();
-	}
-	
-	@Override
-	public void play(Long deltaTime) {
-		// TODO Auto-generated method stub
-		
-	}
-
-	@Override
-	public void doPhysics(World world) {
-		;
 	}
 
 	@Override
