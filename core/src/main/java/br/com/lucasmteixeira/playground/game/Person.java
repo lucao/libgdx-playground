@@ -41,6 +41,12 @@ public class Person extends MaterialObject implements Physical {
 		this.fixture = this.body.createFixture(fixtureDef);
 		circle.dispose();
 	}
+	
+	@Override
+	public void play(Long deltaTime) {
+		// TODO Auto-generated method stub
+		
+	}
 
 	@Override
 	public void doPhysics(World world) {

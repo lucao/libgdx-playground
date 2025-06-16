@@ -37,6 +37,12 @@ public class Ground extends MaterialObject implements Physical {
 	}
 	
 	@Override
+	public void play(Long deltaTime) {
+		// TODO Auto-generated method stub
+		;
+	}
+	
+	@Override
 	public void doPhysics(World world) {
 		;
 	}
