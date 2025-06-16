@@ -22,7 +22,7 @@ public abstract class Person extends MaterialObject implements Physical {
 		// We set our body to dynamic, for something like ground which doesn't move we
 		// would set it to StaticBody
 		bodyDef.type = BodyType.DynamicBody;
-		bodyDef.position.set(x, y);
+		bodyDef.position.set(this.x, this.y);
 
 		// Create our body in the world using our body definition
 		this.body = world.createBody(bodyDef);

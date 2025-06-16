@@ -43,7 +43,7 @@ public class Main extends ApplicationAdapter {
 		this.aventura.logic(now - Main.frameTimes.peek());
 
 		ScreenUtils.clear(0.15f, 0.15f, 0.2f, 1f);
-		batch.setProjectionMatrix(this.aventura.camera.combined);
+		batch.setProjectionMatrix(this.aventura.getViewport().getCamera().combined);
 		batch.begin();
 		// draw all aventura's pertinent objects
 		for (MaterialObject materialObject : this.aventura.getDrawableGameObjects()) {

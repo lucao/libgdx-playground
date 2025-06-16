@@ -13,7 +13,6 @@ import com.badlogic.gdx.utils.viewport.ExtendViewport;
 public class Aventura {
 	protected final Map<long[], ArrayList<GameObject>> mapGameObjects;
 	protected final World world;
-	public final Camera camera;
 
 	private static Integer STD_ZOOM_W = 50;// 50 meters
 	private static Integer STD_ZOOM_H = 10;// 10 meters
@@ -22,11 +21,15 @@ public class Aventura {
 
 	private final ExtendViewport viewport;
 
+	public ExtendViewport getViewport() {
+		return viewport;
+	}
+
 	protected Aventura(Camera camera) {
 		this.mapGameObjects = new HashMap<>();
-		this.viewport = new ExtendViewport(0, 0);
-		this.camera = camera;
+		this.viewport = new ExtendViewport(10, 10);
 		this.world = new World(new Vector2(0, -10), true);
+		this.world.setGravity(new Vector2(0, 1));
 		this.zoomRatio = 1f;
 	}
 
@@ -64,22 +67,27 @@ public class Aventura {
 		 * 8 - top left
 		 * <p>
 		 */
-		final long[] middle = { Math.round(this.camera.position.x / GameObject.CONSTANTE_DO_QUADRANTE),
-				Math.round(this.camera.position.y / GameObject.CONSTANTE_DO_QUADRANTE) };
+
+		final long[] middle = { Math.round(this.viewport.getCamera().position.x / GameObject.CONSTANTE_DO_QUADRANTE),
+				Math.round(this.viewport.getCamera().position.y / GameObject.CONSTANTE_DO_QUADRANTE) };
 
 		List<MaterialObject> drawableGameObjects = new ArrayList<MaterialObject>();
-		for (final long[] key : new long[][] { middle, { middle[0], middle[1]++ }, { middle[0]++, middle[1] },
-				{ middle[0], middle[1]-- }, { middle[0], middle[1]-- }, { middle[0]--, middle[1] },
-				{ middle[0]--, middle[1] }, { middle[0], middle[1]++ }, { middle[0], middle[1]++ } }) {
-			if (this.mapGameObjects.containsKey(key)) {
-				for (GameObject gameObject : this.mapGameObjects.get(key)) {
-					if (gameObject instanceof MaterialObject) {
-						drawableGameObjects.add((MaterialObject) gameObject);
-					}
+		/*
+		 * for (final long[] key : new long[][] { middle, { middle[0], middle[1]++ }, {
+		 * middle[0]++, middle[1] }, { middle[0], middle[1]-- }, { middle[0],
+		 * middle[1]-- }, { middle[0]--, middle[1] }, { middle[0]--, middle[1] }, {
+		 * middle[0], middle[1]++ }, { middle[0], middle[1]++ } }) { if
+		 * (this.mapGameObjects.containsKey(key)) { for (GameObject gameObject :
+		 * this.mapGameObjects.get(key)) { if (gameObject instanceof MaterialObject) {
+		 * drawableGameObjects.add((MaterialObject) gameObject); } } } }
+		 */
+		for (ArrayList<GameObject> gameObjects : this.mapGameObjects.values()) {
+			for (GameObject gameObject : gameObjects) {
+				if (gameObject instanceof MaterialObject) {
+					drawableGameObjects.add((MaterialObject) gameObject);
 				}
 			}
 		}
-
 		return drawableGameObjects;
 
 	}

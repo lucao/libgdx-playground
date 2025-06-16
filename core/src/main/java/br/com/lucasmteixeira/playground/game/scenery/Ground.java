@@ -22,7 +22,7 @@ public class Ground extends MaterialObject implements Physical {
 
 		// Create our body definition
 		BodyDef groundBodyDef = new BodyDef();
-		groundBodyDef.position.set(new Vector2(x, y));
+		groundBodyDef.position.set(new Vector2(this.x, this.y));
 		groundBodyDef.type = BodyType.StaticBody;
 		// Create a body from the definition and add it to the world
 		this.body = world.createBody(groundBodyDef);
@@ -35,11 +35,13 @@ public class Ground extends MaterialObject implements Physical {
 		// Clean up after ourselves
 		groundBox.dispose();
 	}
-	
+
 	@Override
 	public void play(Long deltaTime) {
 		// TODO Auto-generated method stub
-		;
+		Vector2 position = this.body.getPosition();
+		this.x = position.x;
+		this.y = position.y;
 	}
 
 	@Override

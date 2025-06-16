@@ -19,7 +19,7 @@ public class AventuraPadrao extends Aventura {
 	private static List<GameObject> criarGameObjects(World world) {
 		List<GameObject> gameObjects = new ArrayList<GameObject>();
 		gameObjects.add(new Player(0f, 0f, 1f, 2f, new Texture("libgdx.png"), world));
-		gameObjects.add(new Ground(-100f, 20f, 400f, 20f, new Texture(""), world));
+		//gameObjects.add(new Ground(-100f, 20f, 400f, 20f, new Texture("libgdx.png"), world));
 
 		return gameObjects;
 	}
@@ -33,7 +33,7 @@ public class AventuraPadrao extends Aventura {
 			}
 			this.mapGameObjects.get(key).add(gameObject);
 		}
-
+		
 		// TODO Auto-generated constructor stub
 	}
 
@@ -41,9 +41,9 @@ public class AventuraPadrao extends Aventura {
 
 	@Override
 	public void logic(Long deltaTime) {
-		camera.position.x = ((followedObject.x + followedObject.w / 2) - camera.position.x) * lerp;
-		camera.position.y = ((followedObject.y + followedObject.h / 2) - camera.position.y) * lerp;
-		camera.update();
+		//camera.position.x = ((followedObject.x + followedObject.w / 2) - camera.position.x) * lerp;
+		//camera.position.y = ((followedObject.y + followedObject.h / 2) - camera.position.y) * lerp;
+		//camera.update();
 
 		super.logic(deltaTime);
 	}
