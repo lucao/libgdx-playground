@@ -3,8 +3,8 @@ package br.com.lucasmteixeira.playground.game;
 import br.com.lucasmteixeira.playground.Main;
 
 public abstract class GameObject {
-	public Float x;
-	public Float y;
+	protected Float x;
+	protected Float y;
 
 	protected GameObject(Float x, Float y) {
 		this.x = x;
@@ -17,4 +17,11 @@ public abstract class GameObject {
 		return new long[] { Math.round(x / Main.CONSTANTE_DO_QUADRANTE), Math.round(y / Main.CONSTANTE_DO_QUADRANTE) };
 	}
 
+	public Float getX() {
+		return x;
+	}
+
+	public Float getY() {
+		return y;
+	}
 }

@@ -22,7 +22,7 @@ public class Ground extends MaterialObject implements Physical {
 
 		// Create our body definition
 		BodyDef groundBodyDef = new BodyDef();
-		groundBodyDef.position.set(new Vector2(this.x, this.y));
+		groundBodyDef.position.set(new Vector2((x + w) - w / 2, (y + h) - h / 2));
 		groundBodyDef.type = BodyType.StaticBody;
 		// Create a body from the definition and add it to the world
 		this.body = world.createBody(groundBodyDef);
@@ -38,10 +38,10 @@ public class Ground extends MaterialObject implements Physical {
 
 	@Override
 	public void play(Long deltaTime) {
-		// TODO Auto-generated method stub
-		Vector2 position = this.body.getPosition();
-		this.x = position.x;
-		this.y = position.y;
+//		// TODO Auto-generated method stub
+//		Vector2 position = this.body.getPosition();
+//		this.x = position.x;
+//		this.y = position.y;
 	}
 
 	@Override
@@ -52,5 +52,16 @@ public class Ground extends MaterialObject implements Physical {
 	@Override
 	public Fixture getFixture() {
 		return this.fixture;
+	}
+	
+	//TODO lembra que o X e Y do box2D são no centro
+	@Override
+	public Float getX() {
+		return this.body.getPosition().x;
+	}
+
+	@Override
+	public Float getY() {
+		return this.body.getPosition().y;
 	}
 }

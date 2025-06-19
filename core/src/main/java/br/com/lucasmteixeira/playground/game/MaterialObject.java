@@ -3,8 +3,8 @@ package br.com.lucasmteixeira.playground.game;
 import com.badlogic.gdx.graphics.Texture;
 
 public abstract class MaterialObject extends GameObject {
-	public Float w;
-	public Float h;
+	protected Float w;
+	protected Float h;
 	
 	private final Texture texture;
 	
@@ -21,4 +21,11 @@ public abstract class MaterialObject extends GameObject {
 		return texture;
 	}
 
+	public Float getW() {
+		return w;
+	}
+
+	public Float getH() {
+		return h;
+	}
 }

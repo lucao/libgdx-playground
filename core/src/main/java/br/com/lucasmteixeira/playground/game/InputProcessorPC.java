@@ -19,8 +19,8 @@ public class InputProcessorPC implements InputProcessor {
 	@Override
 	public boolean keyDown(int keycode) {
 		if (keycode == Input.Keys.SPACE) {
-			player.x = 0f;
-			player.y = 0f;
+			player.setX(0f);
+			player.setY(0f);
 		}
 		return true;
 	}

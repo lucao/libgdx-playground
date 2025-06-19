@@ -22,14 +22,14 @@ public abstract class Person extends MaterialObject implements Physical {
 		// We set our body to dynamic, for something like ground which doesn't move we
 		// would set it to StaticBody
 		bodyDef.type = BodyType.DynamicBody;
-		bodyDef.position.set(this.x, this.y);
+		bodyDef.position.set((x + w) - w / 2, (y + h) - h / 2);
 
 		// Create our body in the world using our body definition
 		this.body = world.createBody(bodyDef);
 
 		// Create a circle shape and set its radius to 6
 		CircleShape circle = new CircleShape();
-		circle.setRadius(6f);
+		circle.setRadius(w/2);
 
 		// Create a fixture definition to apply our shape to
 		FixtureDef fixtureDef = new FixtureDef();
@@ -51,4 +51,30 @@ public abstract class Person extends MaterialObject implements Physical {
 	public Fixture getFixture() {
 		return this.fixture;
 	}
+
+	@Override
+	public void play(Long deltaTime) {
+		// TODO Auto-generated method stub
+
+	}
+
+	//TODO lembra que o X e Y do box2D são no centro
+	public void setX(Float x) {
+		this.body.getPosition().x = x;
+	}
+
+	public void setY(Float y) {
+		this.body.getPosition().y = y;
+	}
+
+	@Override
+	public Float getX() {
+		return this.body.getPosition().x;
+	}
+
+	@Override
+	public Float getY() {
+		return this.body.getPosition().y;
+	}
+
 }

@@ -11,6 +11,8 @@ import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.PerspectiveCamera;
+import com.badlogic.gdx.graphics.Pixmap;
+import com.badlogic.gdx.graphics.Pixmap.Format;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.utils.ScreenUtils;
@@ -23,6 +25,7 @@ import br.com.lucasmteixeira.playground.game.InputProcessorPC;
 import br.com.lucasmteixeira.playground.game.MaterialObject;
 import br.com.lucasmteixeira.playground.game.aventuras.AventuraPadrao;
 import br.com.lucasmteixeira.playground.game.characters.Player;
+import br.com.lucasmteixeira.playground.game.scenery.Ground;
 
 /**
  * {@link com.badlogic.gdx.ApplicationListener} implementation shared by all
@@ -37,7 +40,7 @@ public class Main extends ApplicationAdapter {
 	private Viewport viewport;
 	private SpriteBatch batch;
 
-	private static final int WORLD_DISTANCE_UNIT = 10;
+	private static final int WORLD_DISTANCE_UNIT = 100;
 	public static final int CONSTANTE_DO_QUADRANTE = 10000;
 
 	private int VIEWPORT_WIDTH;
@@ -59,9 +62,14 @@ public class Main extends ApplicationAdapter {
 		final Player player = new Player(0f, 0f, 20f, 20f, new Texture("libgdx.png"), this.aventura.getWorld());
 		this.followedObject = player;
 		this.aventura.addGameObject(player);
+
+		final Pixmap pixmap = new Pixmap(64, 64, Format.RGBA8888);
+		pixmap.setColor(1, 1, 0, 0.75f);
+		Ground ground = new Ground(-30f, -50f, 500f, 20f, new Texture(pixmap), this.aventura.getWorld());
+		this.aventura.addGameObject(ground);
 		camera = new OrthographicCamera(VIEWPORT_WIDTH, VIEWPORT_HEIGHT);
-		//camera.position.set(player.x, player.y, 0);
-		
+		// camera.position.set(player.x, player.y, 0);
+
 		camera.update();
 		viewport = new ExtendViewport(this.VIEWPORT_WIDTH, this.VIEWPORT_HEIGHT, camera);
 		batch = new SpriteBatch();
@@ -80,20 +88,24 @@ public class Main extends ApplicationAdapter {
 		final Long now = Instant.now().getEpochSecond();
 		ScreenUtils.clear(Color.DARK_GRAY);
 		this.aventura.logic(now - Main.frameTimes.peek());
-		
+
 		viewport.apply();
-		//camera.position.x = ((followedObject.x + followedObject.w / 2) - camera.position.x) * lerp;
-		//camera.position.y = ((followedObject.y + followedObject.h / 2) - camera.position.y) * lerp;
+		// camera.position.x = ((followedObject.x + followedObject.w / 2) -
+		// camera.position.x) * lerp;
+		// camera.position.y = ((followedObject.y + followedObject.h / 2) -
+		// camera.position.y) * lerp;
 		camera.update();
-		
-		
+
 		batch.setProjectionMatrix(camera.projection);
 		batch.setTransformMatrix(camera.view);
 		batch.begin();
 		// draw all aventura's pertinent objects
 		for (MaterialObject materialObject : this.aventura.getDrawableGameObjects(this.camera)) {
-			batch.draw(materialObject.getTexture(), materialObject.x, materialObject.y, materialObject.w,
-					materialObject.h);
+			Gdx.app.log(materialObject.getClass().getName(),
+					"X/Y/W/H: " + materialObject.getX().toString() + "/" + materialObject.getY().toString() + "/"
+							+ materialObject.getW().toString() + "/" + materialObject.getH().toString());
+			batch.draw(materialObject.getTexture(), materialObject.getX(), materialObject.getY(), materialObject.getW(),
+					materialObject.getH());
 		}
 
 		batch.end();
