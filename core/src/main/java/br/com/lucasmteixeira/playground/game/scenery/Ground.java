@@ -54,14 +54,13 @@ public class Ground extends MaterialObject implements Physical {
 		return this.fixture;
 	}
 	
-	//TODO lembra que o X e Y do box2D são no centro
 	@Override
 	public Float getX() {
-		return this.body.getPosition().x;
+		return this.x = this.body.getPosition().x - (w / 2);
 	}
 
 	@Override
 	public Float getY() {
-		return this.body.getPosition().y;
+		return this.y = this.body.getPosition().y - (h / 2);
 	}
 }

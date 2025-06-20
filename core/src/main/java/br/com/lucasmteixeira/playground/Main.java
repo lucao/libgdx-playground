@@ -64,8 +64,11 @@ public class Main extends ApplicationAdapter {
 		this.aventura.addGameObject(player);
 
 		final Pixmap pixmap = new Pixmap(64, 64, Format.RGBA8888);
-		pixmap.setColor(1, 1, 0, 0.75f);
+		pixmap.setColor(0, 1, 0, 0.75f);
+		pixmap.fillRectangle(0, 0, 500, 20);
 		Ground ground = new Ground(-30f, -50f, 500f, 20f, new Texture(pixmap), this.aventura.getWorld());
+		pixmap.dispose();
+		//Ground ground = new Ground(-30f, -50f, 500f, 20f, new Texture("libgdx.png"), this.aventura.getWorld());
 		this.aventura.addGameObject(ground);
 		camera = new OrthographicCamera(VIEWPORT_WIDTH, VIEWPORT_HEIGHT);
 		// camera.position.set(player.x, player.y, 0);
@@ -101,9 +104,9 @@ public class Main extends ApplicationAdapter {
 		batch.begin();
 		// draw all aventura's pertinent objects
 		for (MaterialObject materialObject : this.aventura.getDrawableGameObjects(this.camera)) {
-			Gdx.app.log(materialObject.getClass().getName(),
-					"X/Y/W/H: " + materialObject.getX().toString() + "/" + materialObject.getY().toString() + "/"
-							+ materialObject.getW().toString() + "/" + materialObject.getH().toString());
+//			Gdx.app.log(materialObject.getClass().getName(),
+//					"X/Y/W/H: " + materialObject.getX().toString() + "/" + materialObject.getY().toString() + "/"
+//							+ materialObject.getW().toString() + "/" + materialObject.getH().toString());
 			batch.draw(materialObject.getTexture(), materialObject.getX(), materialObject.getY(), materialObject.getW(),
 					materialObject.getH());
 		}

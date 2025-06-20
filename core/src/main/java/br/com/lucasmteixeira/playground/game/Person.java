@@ -29,7 +29,7 @@ public abstract class Person extends MaterialObject implements Physical {
 
 		// Create a circle shape and set its radius to 6
 		CircleShape circle = new CircleShape();
-		circle.setRadius(w/2);
+		circle.setRadius(w / 2);
 
 		// Create a fixture definition to apply our shape to
 		FixtureDef fixtureDef = new FixtureDef();
@@ -58,23 +58,22 @@ public abstract class Person extends MaterialObject implements Physical {
 
 	}
 
-	//TODO lembra que o X e Y do box2D são no centro
+	// TODO lembra que o X e Y do box2D são no centro
 	public void setX(Float x) {
-		this.body.getPosition().x = x;
+		this.body.getPosition().x = (x + w) - w / 2;
 	}
 
 	public void setY(Float y) {
-		this.body.getPosition().y = y;
+		this.body.getPosition().y = (y + h) - h / 2;
 	}
 
 	@Override
 	public Float getX() {
-		return this.body.getPosition().x;
+		return this.x = this.body.getPosition().x - (w / 2);
 	}
 
 	@Override
 	public Float getY() {
-		return this.body.getPosition().y;
+		return this.y = this.body.getPosition().y - (h / 2);
 	}
-
 }
