@@ -34,6 +34,8 @@ public class Ground extends MaterialObject implements Physical {
 		this.fixture = this.body.createFixture(groundBox, 0.0f);
 		// Clean up after ourselves
 		groundBox.dispose();
+		
+		this.body.setUserData(this);
 	}
 
 	@Override

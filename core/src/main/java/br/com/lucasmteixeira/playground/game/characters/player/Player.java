@@ -1,9 +1,9 @@
-package br.com.lucasmteixeira.playground.game.characters;
+package br.com.lucasmteixeira.playground.game.characters.player;
 
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.physics.box2d.World;
 
-import br.com.lucasmteixeira.playground.game.Person;
+import br.com.lucasmteixeira.playground.game.characters.Person;
 
 public class Player extends Person {
 
@@ -18,5 +18,4 @@ public class Player extends Person {
 		// TODO Auto-generated method stub
 		
 	}
-
 }

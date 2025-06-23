@@ -1,9 +1,18 @@
-package br.com.lucasmteixeira.playground.game;
+package br.com.lucasmteixeira.playground.game.characters;
+
+import java.util.Stack;
 
 import com.badlogic.gdx.graphics.Texture;
+import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.physics.box2d.Body;
 import com.badlogic.gdx.physics.box2d.BodyDef;
 import com.badlogic.gdx.physics.box2d.BodyDef.BodyType;
+
+import br.com.lucasmteixeira.playground.game.GameObject;
+import br.com.lucasmteixeira.playground.game.MaterialObject;
+import br.com.lucasmteixeira.playground.game.Physical;
+import br.com.lucasmteixeira.playground.game.exceptions.UntreatedCollision;
+
 import com.badlogic.gdx.physics.box2d.CircleShape;
 import com.badlogic.gdx.physics.box2d.Fixture;
 import com.badlogic.gdx.physics.box2d.FixtureDef;
@@ -13,6 +22,22 @@ public abstract class Person extends MaterialObject implements Physical {
 	protected final Body body;
 
 	protected final Fixture fixture;
+
+	protected Integer strength;
+	protected Integer dexterity;
+	protected Integer vitality;
+	protected Integer inteligence;
+	protected Integer wisdom;
+	protected Integer charisma;
+
+	protected Integer lifePoints;
+	protected Integer energyPoints;
+
+	protected boolean grounded;
+	
+	private static final Integer NORMAL_JUMP_FORCE = 10;
+	
+	private Stack<Action> actions;
 
 	protected Person(Float x, Float y, Float w, Float h, Texture texture, World world) {
 		super(x, y, w, h, texture);
@@ -40,6 +65,10 @@ public abstract class Person extends MaterialObject implements Physical {
 
 		this.fixture = this.body.createFixture(fixtureDef);
 		circle.dispose();
+
+		this.body.setUserData(this);
+		
+		this.grounded = false;
 	}
 
 	@Override
@@ -53,9 +82,31 @@ public abstract class Person extends MaterialObject implements Physical {
 	}
 
 	@Override
+	public void colisao(GameObject gameObject) throws UntreatedCollision {
+		switch (gameObject.getGameObjectType()) {
+		case GROUND:
+			this.grounded = true;
+			break;
+		case PERSON:
+			;
+			break;
+		default:
+			super.colisao(gameObject);
+			break;
+		}
+	}
+
+	@Override
 	public void play(Long deltaTime) {
 		// TODO Auto-generated method stub
 
+	}
+
+	public void jump() {
+		if (grounded) {
+			this.body.applyLinearImpulse(new Vector2(0, NORMAL_JUMP_FORCE), this.body.getLocalCenter(), true);
+			grounded = false;
+		}
 	}
 
 	// TODO lembra que o X e Y do box2D são no centro

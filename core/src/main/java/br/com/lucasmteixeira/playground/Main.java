@@ -20,11 +20,11 @@ import com.badlogic.gdx.utils.viewport.ExtendViewport;
 import com.badlogic.gdx.utils.viewport.FitViewport;
 import com.badlogic.gdx.utils.viewport.Viewport;
 
-import br.com.lucasmteixeira.playground.game.Aventura;
 import br.com.lucasmteixeira.playground.game.InputProcessorPC;
 import br.com.lucasmteixeira.playground.game.MaterialObject;
+import br.com.lucasmteixeira.playground.game.aventuras.Aventura;
 import br.com.lucasmteixeira.playground.game.aventuras.AventuraPadrao;
-import br.com.lucasmteixeira.playground.game.characters.Player;
+import br.com.lucasmteixeira.playground.game.characters.player.Player;
 import br.com.lucasmteixeira.playground.game.scenery.Ground;
 
 /**

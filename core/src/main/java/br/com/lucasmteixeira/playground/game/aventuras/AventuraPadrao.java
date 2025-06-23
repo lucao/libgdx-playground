@@ -1,7 +1,5 @@
 package br.com.lucasmteixeira.playground.game.aventuras;
 
-import br.com.lucasmteixeira.playground.game.Aventura;
-
 public class AventuraPadrao extends Aventura {
 	
 

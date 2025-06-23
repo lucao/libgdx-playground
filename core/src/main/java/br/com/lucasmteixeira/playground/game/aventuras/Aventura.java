@@ -1,4 +1,4 @@
-package br.com.lucasmteixeira.playground.game;
+package br.com.lucasmteixeira.playground.game.aventuras;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -10,6 +10,8 @@ import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.physics.box2d.World;
 
 import br.com.lucasmteixeira.playground.Main;
+import br.com.lucasmteixeira.playground.game.GameObject;
+import br.com.lucasmteixeira.playground.game.MaterialObject;
 
 public class Aventura {
 	protected final Map<long[], ArrayList<GameObject>> mapGameObjects;
