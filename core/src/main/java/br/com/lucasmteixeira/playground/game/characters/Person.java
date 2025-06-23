@@ -1,6 +1,17 @@
 package br.com.lucasmteixeira.playground.game.characters;
 
+import java.time.Instant;
+import java.time.temporal.TemporalAmount;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.Stack;
+
+import org.apache.commons.collections4.queue.CircularFifoQueue;
 
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.math.Vector2;
@@ -34,10 +45,14 @@ public abstract class Person extends MaterialObject implements Physical {
 	protected Integer energyPoints;
 
 	protected boolean grounded;
-	
+
 	private static final Integer NORMAL_JUMP_FORCE = 10;
-	
-	private Stack<Action> actions;
+
+	private final List<ActionType> actionsPool;
+	private final CircularFifoQueue<Action> actionsHistory;
+
+	private final Set<Action> runningActions;
+	private final Set<Action> actionsToRun;
 
 	protected Person(Float x, Float y, Float w, Float h, Texture texture, World world) {
 		super(x, y, w, h, texture);
@@ -67,8 +82,14 @@ public abstract class Person extends MaterialObject implements Physical {
 		circle.dispose();
 
 		this.body.setUserData(this);
-		
+
 		this.grounded = false;
+
+		this.actionsPool = new ArrayList<ActionType>();
+		this.actionsHistory = new CircularFifoQueue<Action>(50);
+
+		this.runningActions = new HashSet<Action>();
+		this.actionsToRun = new HashSet<Action>();
 	}
 
 	@Override
@@ -82,31 +103,48 @@ public abstract class Person extends MaterialObject implements Physical {
 	}
 
 	@Override
-	public void colisao(GameObject gameObject) throws UntreatedCollision {
-		switch (gameObject.getGameObjectType()) {
+	public void colisao(Physical physicalObject) throws UntreatedCollision {
+		switch (physicalObject.getCollisionType()) {
 		case GROUND:
 			this.grounded = true;
 			break;
 		case PERSON:
+			// TODO treat the object within range
 			;
 			break;
 		default:
-			super.colisao(gameObject);
 			break;
 		}
 	}
 
 	@Override
-	public void play(Long deltaTime) {
-		// TODO Auto-generated method stub
+	public void play(Instant now, Long deltaTime) {
+		// TODO clear actions that are already executed
+		final Iterator<Action> runningActionsIterator = this.runningActions.iterator();
+		while (runningActionsIterator.hasNext()) {
+			Action action = runningActionsIterator.next();
+			if(now.isBefore(action.getEnd())) {
+				runningActionsIterator.remove();
+			}
+		}
+		
+		final Iterator<ActionType> actionsPoolIterator = this.actionsPool.iterator();
 
-	}
+		while (actionsPoolIterator.hasNext()) {
+			final Action actionToRun = new Action(actionsPoolIterator.next(), now);
+			if (!this.runningActions.add(actionToRun))
+				continue;
+			this.actionsToRun.add(actionToRun);
+		}
 
-	public void jump() {
 		if (grounded) {
 			this.body.applyLinearImpulse(new Vector2(0, NORMAL_JUMP_FORCE), this.body.getLocalCenter(), true);
 			grounded = false;
 		}
+	}
+
+	public void jump() {
+		this.actionsPool.add(ActionType.JUMP);
 	}
 
 	// TODO lembra que o X e Y do box2D são no centro

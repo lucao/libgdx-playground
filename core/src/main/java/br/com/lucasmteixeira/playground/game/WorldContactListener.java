@@ -20,12 +20,12 @@ public class WorldContactListener implements ContactListener {
 	@Override
 	public void beginContact(Contact contact) {
 		try {
-			GameObject gameObject1 = (GameObject) contact.getFixtureA().getUserData();
-			gameObject1.colisao((GameObject) contact.getFixtureB().getUserData());
+			Physical gameObject1 = (Physical) contact.getFixtureA().getUserData();
+			gameObject1.colisao((Physical) contact.getFixtureB().getUserData());
 		} catch (ClassCastException e) {
 			try {
 				throw new GameException(
-						"Não foi possível verificar colisão porque um dos objetos envolvidos na colisão não é um GameObject",
+						"Não foi possível verificar colisão porque um dos objetos envolvidos na colisão não é do tipo Physical",
 						e);
 			} catch (GameException ex) {
 				COLLISION_LOGGER.error("COLLISION", ex.getMessage());

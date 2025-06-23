@@ -1,5 +1,7 @@
 package br.com.lucasmteixeira.playground.game.scenery;
 
+import java.time.Instant;
+
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.physics.box2d.Body;
@@ -11,6 +13,7 @@ import com.badlogic.gdx.physics.box2d.BodyDef.BodyType;
 
 import br.com.lucasmteixeira.playground.game.MaterialObject;
 import br.com.lucasmteixeira.playground.game.Physical;
+import br.com.lucasmteixeira.playground.game.exceptions.UntreatedCollision;
 
 public class Ground extends MaterialObject implements Physical {
 	protected Body body;
@@ -37,9 +40,14 @@ public class Ground extends MaterialObject implements Physical {
 		
 		this.body.setUserData(this);
 	}
+	
+	@Override
+	public void colisao(Physical physicalObject) throws UntreatedCollision {
+		// TODO Auto-generated method stub
+	}
 
 	@Override
-	public void play(Long deltaTime) {
+	public void play(Instant now, Long deltaTime) {
 //		// TODO Auto-generated method stub
 //		Vector2 position = this.body.getPosition();
 //		this.x = position.x;
