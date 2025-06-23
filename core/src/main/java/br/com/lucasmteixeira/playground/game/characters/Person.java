@@ -123,11 +123,11 @@ public abstract class Person extends MaterialObject implements Physical {
 		final Iterator<Action> runningActionsIterator = this.runningActions.iterator();
 		while (runningActionsIterator.hasNext()) {
 			Action action = runningActionsIterator.next();
-			if(now.isBefore(action.getEnd())) {
+			if (now.isBefore(action.getEnd())) {
 				runningActionsIterator.remove();
 			}
 		}
-		
+
 		final Iterator<ActionType> actionsPoolIterator = this.actionsPool.iterator();
 
 		while (actionsPoolIterator.hasNext()) {
@@ -137,10 +137,19 @@ public abstract class Person extends MaterialObject implements Physical {
 			this.actionsToRun.add(actionToRun);
 		}
 
-		if (grounded) {
-			this.body.applyLinearImpulse(new Vector2(0, NORMAL_JUMP_FORCE), this.body.getLocalCenter(), true);
-			grounded = false;
+		for (Action actionToRun : this.actionsToRun) {
+			switch (actionToRun.getType()) {
+			case JUMP:
+				if (grounded) {
+					this.body.applyLinearImpulse(new Vector2(0, NORMAL_JUMP_FORCE), this.body.getLocalCenter(), true);
+					grounded = false;
+				}
+				continue;
+			}
 		}
+
+		// TODO execute actions
+		this.actionsToRun.clear();
 	}
 
 	public void jump() {
