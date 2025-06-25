@@ -2,29 +2,46 @@ package br.com.lucasmteixeira.playground.game.characters;
 
 import java.time.Instant;
 import java.util.Objects;
+import java.util.Optional;
 
-public class Action {
-	private final ActionType type;
-	private final Instant begin;
-	private final Instant end;
-	
-	public Action(ActionType type, Instant begin) {
+public abstract class Action {
+	protected final ActionType type;
+	protected final Instant begin;
+
+	protected Action(ActionType type, Instant begin) {
 		super();
 		this.type = type;
 		this.begin = begin;
-		this.end = begin.plus(type.getCooldown());
+	}
+	
+	public static Action create(ActionType type, Instant now, Long deltaTime) {
+		switch (type) {
+		case JUMP:
+			break;
+		case WALK_LEFT:
+			break;
+		case WALK_RIGHT:
+			break;
+		default:
+			break;
+		
+		}
 	}
 
 	public ActionType getType() {
 		return type;
+	}
+	
+	public Direction getDirection() {
+		return Direction.NONE;
 	}
 
 	public Instant getBegin() {
 		return begin;
 	}
 
-	public Instant getEnd() {
-		return end;
+	public Optional<Instant> getEnd() {
+		return Optional.empty();
 	}
 
 	@Override

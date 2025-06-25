@@ -1,21 +1,22 @@
 package br.com.lucasmteixeira.playground.game.characters;
 
 import java.time.Duration;
+import java.util.Optional;
 
 public enum ActionType {
-	JUMP();
-	
+	JUMP(), WALK_RIGHT(Optional.empty()), WALK_LEFT(Optional.empty());
+
 	ActionType() {
-		this.cooldown = Duration.ofSeconds(1);
+		this.cooldown = Optional.of(Duration.ofSeconds(1));
 	}
-	
-	ActionType(Duration duration) {
+
+	ActionType(Optional<Duration> duration) {
 		this.cooldown = duration;
 	}
 
-	public Duration getCooldown() {
+	public Optional<Duration> getCooldown() {
 		return cooldown;
 	}
 
-	private final Duration cooldown;
+	private final Optional<Duration> cooldown;
 }

@@ -52,6 +52,7 @@ public abstract class Person extends MaterialObject implements Physical {
 	protected boolean grounded;
 
 	private static final Integer NORMAL_JUMP_FORCE = 20000;
+	private static final Float NORMAL_WALK_SPEED = 10f;// TODO walk
 
 	private final List<ActionType> actionsPool;
 	private final CircularFifoQueue<Action> actionsHistory;
@@ -134,7 +135,14 @@ public abstract class Person extends MaterialObject implements Physical {
 		final Iterator<Action> runningActionsIterator = this.runningActions.iterator();
 		while (runningActionsIterator.hasNext()) {
 			Action action = runningActionsIterator.next();
-			if (now.isBefore(action.getEnd())) {
+			if (action.getEnd().isPresent()) {
+				// action with cooldown
+				if (now.isBefore(action.getEnd().get())) {
+					runningActionsIterator.remove();
+				}
+			} else {
+				// action with no cooldown
+				this.actionsToRun.add(action);
 				runningActionsIterator.remove();
 			}
 		}
@@ -142,7 +150,7 @@ public abstract class Person extends MaterialObject implements Physical {
 		final Iterator<ActionType> actionsPoolIterator = this.actionsPool.iterator();
 
 		while (actionsPoolIterator.hasNext()) {
-			final Action actionToRun = new Action(actionsPoolIterator.next(), now);
+			final Action actionToRun = Action.create(actionsPoolIterator.next(), now, deltaTime);
 			if (!this.runningActions.add(actionToRun))
 				continue;
 			this.actionsToRun.add(actionToRun);
@@ -156,11 +164,32 @@ public abstract class Person extends MaterialObject implements Physical {
 			case JUMP:
 				if (grounded) {
 					Gdx.app.debug("DEBUG", "running action JUMP, for: ".concat(this.getClass().toString()));
-					this.body.applyLinearImpulse(new Vector2(0, NORMAL_JUMP_FORCE), this.body.getLocalCenter(),
-							true);
+					this.body.applyLinearImpulse(new Vector2(0, NORMAL_JUMP_FORCE), this.body.getLocalCenter(), true);
 					grounded = false;
 				}
 				continue;
+			case WALK_RIGHT:
+			case WALK_LEFT:
+				Gdx.app.debug("DEBUG", "running action WALK, for: ".concat(this.getClass().toString()));
+				final float mass = this.body.getMass();
+				final float currentVelocity = this.body.getLinearVelocity().x;
+				final float velocityChange;
+				if (Direction.RIGHT.equals(actionToRun.getDirection())) {
+					velocityChange = NORMAL_WALK_SPEED - currentVelocity;
+				} else if (Direction.LEFT.equals(actionToRun.getDirection())) {
+					velocityChange = -NORMAL_WALK_SPEED - currentVelocity;
+				} else {
+					velocityChange = 0.0f;
+					// TODO throw exception
+				}
+
+				final float force = mass * velocityChange / deltaTime;
+
+				this.body.applyForceToCenter(new Vector2(force, 0), true);
+
+				break;
+			default:
+				break;
 			}
 		}
 
