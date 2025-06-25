@@ -1,9 +1,11 @@
 package br.com.lucasmteixeira.playground;
 
 import java.time.Instant;
+import java.util.List;
 
 import org.apache.commons.collections4.queue.CircularFifoQueue;
 
+import com.badlogic.gdx.Application;
 import com.badlogic.gdx.ApplicationAdapter;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Camera;
@@ -52,6 +54,8 @@ public class Main extends ApplicationAdapter {
 
 	@Override
 	public void create() {
+		Gdx.app.setLogLevel(Application.LOG_DEBUG);
+		
 		this.aventura = new AventuraPadrao();
 
 		// Create camera and viewport
@@ -68,7 +72,8 @@ public class Main extends ApplicationAdapter {
 		pixmap.fillRectangle(0, 0, 500, 20);
 		Ground ground = new Ground(-30f, -50f, 500f, 20f, new Texture(pixmap), this.aventura.getWorld());
 		pixmap.dispose();
-		//Ground ground = new Ground(-30f, -50f, 500f, 20f, new Texture("libgdx.png"), this.aventura.getWorld());
+		// Ground ground = new Ground(-30f, -50f, 500f, 20f, new Texture("libgdx.png"),
+		// this.aventura.getWorld());
 		this.aventura.addGameObject(ground);
 		camera = new OrthographicCamera(VIEWPORT_WIDTH, VIEWPORT_HEIGHT);
 		// camera.position.set(player.x, player.y, 0);
@@ -88,9 +93,10 @@ public class Main extends ApplicationAdapter {
 
 	@Override
 	public void render() {
-		final Long now = Instant.now().getEpochSecond();
+		final Instant now = Instant.now();
 		ScreenUtils.clear(Color.DARK_GRAY);
-		this.aventura.logic(now - Main.frameTimes.peek());
+		final List<MaterialObject> drawableObjects = this.aventura.run(this.camera, now,
+				now.getEpochSecond() - Main.frameTimes.peek());
 
 		viewport.apply();
 		// camera.position.x = ((followedObject.x + followedObject.w / 2) -
@@ -103,7 +109,7 @@ public class Main extends ApplicationAdapter {
 		batch.setTransformMatrix(camera.view);
 		batch.begin();
 		// draw all aventura's pertinent objects
-		for (MaterialObject materialObject : this.aventura.getDrawableGameObjects(this.camera)) {
+		for (MaterialObject materialObject : drawableObjects) {
 //			Gdx.app.log(materialObject.getClass().getName(),
 //					"X/Y/W/H: " + materialObject.getX().toString() + "/" + materialObject.getY().toString() + "/"
 //							+ materialObject.getW().toString() + "/" + materialObject.getH().toString());

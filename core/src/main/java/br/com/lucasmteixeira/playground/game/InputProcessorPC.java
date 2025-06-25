@@ -1,5 +1,6 @@
 package br.com.lucasmteixeira.playground.game;
 
+import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.InputProcessor;
 import com.badlogic.gdx.graphics.Camera;
@@ -8,6 +9,7 @@ import com.badlogic.gdx.math.Vector3;
 import br.com.lucasmteixeira.playground.game.characters.player.Player;
 
 public class InputProcessorPC implements InputProcessor {
+	
 	private final Player player;
 	private final Camera camera;
 
@@ -19,6 +21,7 @@ public class InputProcessorPC implements InputProcessor {
 	@Override
 	public boolean keyDown(int keycode) {
 		if (keycode == Input.Keys.SPACE) {
+			Gdx.app.debug("DEBUG", "Dispatching jump action");
 			player.jump();
 		}
 		return true;

@@ -17,7 +17,7 @@ public class Player extends Person {
 
 	@Override
 	public void play(Instant now, Long deltaTime) {
-		// TODO Auto-generated method stub
+		super.play(now, deltaTime);
 		
 	}
 }

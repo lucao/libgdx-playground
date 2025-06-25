@@ -13,12 +13,15 @@ import java.util.Stack;
 
 import org.apache.commons.collections4.queue.CircularFifoQueue;
 
+import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.ai.GdxLogger;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.physics.box2d.Body;
 import com.badlogic.gdx.physics.box2d.BodyDef;
 import com.badlogic.gdx.physics.box2d.BodyDef.BodyType;
 
+import br.com.lucasmteixeira.playground.game.CollisionType;
 import br.com.lucasmteixeira.playground.game.GameObject;
 import br.com.lucasmteixeira.playground.game.MaterialObject;
 import br.com.lucasmteixeira.playground.game.Physical;
@@ -30,6 +33,8 @@ import com.badlogic.gdx.physics.box2d.FixtureDef;
 import com.badlogic.gdx.physics.box2d.World;
 
 public abstract class Person extends MaterialObject implements Physical {
+	private static final GdxLogger LOGGER = new GdxLogger();
+
 	protected final Body body;
 
 	protected final Fixture fixture;
@@ -46,7 +51,7 @@ public abstract class Person extends MaterialObject implements Physical {
 
 	protected boolean grounded;
 
-	private static final Integer NORMAL_JUMP_FORCE = 10;
+	private static final Integer NORMAL_JUMP_FORCE = 20000;
 
 	private final List<ActionType> actionsPool;
 	private final CircularFifoQueue<Action> actionsHistory;
@@ -103,13 +108,19 @@ public abstract class Person extends MaterialObject implements Physical {
 	}
 
 	@Override
+	public CollisionType getCollisionType() {
+		return CollisionType.PERSON;
+	}
+
+	@Override
 	public void colisao(Physical physicalObject) throws UntreatedCollision {
 		switch (physicalObject.getCollisionType()) {
 		case GROUND:
+			Gdx.app.debug("DEBUG", "player grounded");
 			this.grounded = true;
 			break;
 		case PERSON:
-			// TODO treat the object within range
+			// TODO treat the object within range for interactions
 			;
 			break;
 		default:
@@ -119,7 +130,7 @@ public abstract class Person extends MaterialObject implements Physical {
 
 	@Override
 	public void play(Instant now, Long deltaTime) {
-		// TODO clear actions that are already executed
+		// clear actions that are already executed
 		final Iterator<Action> runningActionsIterator = this.runningActions.iterator();
 		while (runningActionsIterator.hasNext()) {
 			Action action = runningActionsIterator.next();
@@ -137,11 +148,16 @@ public abstract class Person extends MaterialObject implements Physical {
 			this.actionsToRun.add(actionToRun);
 		}
 
-		for (Action actionToRun : this.actionsToRun) {
+		this.actionsPool.clear();
+
+		for (final Action actionToRun : this.actionsToRun) {
+			this.actionsHistory.add(actionToRun);
 			switch (actionToRun.getType()) {
 			case JUMP:
 				if (grounded) {
-					this.body.applyLinearImpulse(new Vector2(0, NORMAL_JUMP_FORCE), this.body.getLocalCenter(), true);
+					Gdx.app.debug("DEBUG", "running action JUMP, for: ".concat(this.getClass().toString()));
+					this.body.applyLinearImpulse(new Vector2(0, NORMAL_JUMP_FORCE), this.body.getLocalCenter(),
+							true);
 					grounded = false;
 				}
 				continue;
@@ -149,6 +165,7 @@ public abstract class Person extends MaterialObject implements Physical {
 		}
 
 		// TODO execute actions
+
 		this.actionsToRun.clear();
 	}
 

@@ -1,5 +1,6 @@
 package br.com.lucasmteixeira.playground.game;
 
+import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.ai.GdxLogger;
 import com.badlogic.gdx.physics.box2d.Contact;
 import com.badlogic.gdx.physics.box2d.ContactImpulse;
@@ -20,8 +21,20 @@ public class WorldContactListener implements ContactListener {
 	@Override
 	public void beginContact(Contact contact) {
 		try {
-			Physical gameObject1 = (Physical) contact.getFixtureA().getUserData();
-			gameObject1.colisao((Physical) contact.getFixtureB().getUserData());
+			Physical gameObject1 = (Physical) contact.getFixtureA().getBody().getUserData();
+			Physical gameObject2 = (Physical) contact.getFixtureB().getBody().getUserData();
+			if (gameObject1 == null || gameObject2 == null) {
+				Gdx.app.error("ERROR",
+						"Collision detected but not processed due to null userData in Box2D. (gameObject1: "
+								.concat(String.valueOf(gameObject1).concat("), (gameObject2: ")
+										.concat(String.valueOf(gameObject2)).concat(").")));
+			} else {
+				Gdx.app.debug("DEBUG",
+						"Collision detected for: (gameObject1: "
+								.concat(String.valueOf(gameObject1.getClass()).concat("), (gameObject2: ")
+										.concat(String.valueOf(gameObject2.getClass())).concat(").")));
+				gameObject1.colisao(gameObject2);
+			}
 		} catch (ClassCastException e) {
 			try {
 				throw new GameException(
