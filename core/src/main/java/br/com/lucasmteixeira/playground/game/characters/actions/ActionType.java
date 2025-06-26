@@ -1,4 +1,4 @@
-package br.com.lucasmteixeira.playground.game.characters;
+package br.com.lucasmteixeira.playground.game.characters.actions;
 
 import java.time.Duration;
 import java.util.Optional;

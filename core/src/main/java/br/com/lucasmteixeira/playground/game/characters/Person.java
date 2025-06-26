@@ -25,6 +25,9 @@ import br.com.lucasmteixeira.playground.game.CollisionType;
 import br.com.lucasmteixeira.playground.game.GameObject;
 import br.com.lucasmteixeira.playground.game.MaterialObject;
 import br.com.lucasmteixeira.playground.game.Physical;
+import br.com.lucasmteixeira.playground.game.characters.actions.Action;
+import br.com.lucasmteixeira.playground.game.characters.actions.ActionType;
+import br.com.lucasmteixeira.playground.game.characters.actions.Direction;
 import br.com.lucasmteixeira.playground.game.exceptions.UntreatedCollision;
 
 import com.badlogic.gdx.physics.box2d.CircleShape;

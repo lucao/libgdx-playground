@@ -1,9 +1,9 @@
-package br.com.lucasmteixeira.playground.game.characters;
+package br.com.lucasmteixeira.playground.game.characters.actions;
 
 import java.time.Instant;
 import java.util.Optional;
 
-public class Walk extends Action {
+public class Walk extends ContinuousAction {
 	private final Optional<Instant> end;
 	private final Direction direction;
 

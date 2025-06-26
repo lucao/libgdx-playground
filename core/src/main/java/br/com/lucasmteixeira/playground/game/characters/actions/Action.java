@@ -1,4 +1,4 @@
-package br.com.lucasmteixeira.playground.game.characters;
+package br.com.lucasmteixeira.playground.game.characters.actions;
 
 import java.time.Instant;
 import java.util.Objects;
@@ -12,20 +12,6 @@ public abstract class Action {
 		super();
 		this.type = type;
 		this.begin = begin;
-	}
-	
-	public static Action create(ActionType type, Instant now, Long deltaTime) {
-		switch (type) {
-		case JUMP:
-			break;
-		case WALK_LEFT:
-			break;
-		case WALK_RIGHT:
-			break;
-		default:
-			break;
-		
-		}
 	}
 
 	public ActionType getType() {
