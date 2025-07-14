@@ -56,7 +56,7 @@ public abstract class Person extends MaterialObject implements Physical {
 	protected boolean grounded;
 
 	private static final Integer NORMAL_JUMP_FORCE = 20000;
-	private static final Float NORMAL_WALK_SPEED = 10f;// TODO walk
+	private static final Float NORMAL_WALK_SPEED = 100f;// TODO walk
 
 	private final List<ActionType> actionsPool;
 	private final CircularFifoQueue<Action> actionsHistory;
@@ -196,6 +196,10 @@ public abstract class Person extends MaterialObject implements Physical {
 		this.actionsPool.clear();
 
 		for (final Action actionToRun : this.actionsToRun) {
+			final float mass;
+			final float currentVelocity;
+			final float velocityChange;
+			final float forceX;
 			this.actionsHistory.add(actionToRun);
 			switch (actionToRun.getType()) {
 			case JUMP:
@@ -205,19 +209,35 @@ public abstract class Person extends MaterialObject implements Physical {
 					grounded = false;
 				}
 				continue;
-
+//TODO verificar essa palhaçada aqui
 			case STOP_WALKING_LEFT:
 			case STOP_WALKING_RIGHT:
-				// TODO check for stopping actions first
+				Gdx.app.debug("DEBUG", "running action STOP_WALK, for: ".concat(this.getClass().toString()));
+				mass = this.body.getMass();
+				currentVelocity = this.body.getLinearVelocity().x;
+				
+				Gdx.app.debug("DEBUG", "currentVelocity: ".concat(String.valueOf(currentVelocity)));
+				Gdx.app.debug("DEBUG", "direction: ".concat(String.valueOf(actionToRun.getDirection())));
+				if (Direction.RIGHT.equals(actionToRun.getDirection())) {
+					forceX = mass * -currentVelocity / deltaTime;
+				} else if (Direction.LEFT.equals(actionToRun.getDirection())) {
+					forceX = mass * currentVelocity / deltaTime;
+				} else {
+					forceX = 0.0f;
+					// TODO throw exception
+				}
 
+				this.body.applyForceToCenter(new Vector2(forceX, 0), true);
+				
+				Gdx.app.debug("DEBUG", "Force applied to X axis ".concat(String.valueOf(forceX)));
+				continue;
 			case WALKING_RIGHT:
 			case WALKING_LEFT:
 				// TODO check for conflicting continous running actions
 
 				Gdx.app.debug("DEBUG", "running action WALK, for: ".concat(this.getClass().toString()));
-				final float mass = this.body.getMass();
-				final float currentVelocity = this.body.getLinearVelocity().x;
-				final float velocityChange;
+				mass = this.body.getMass();
+				currentVelocity = this.body.getLinearVelocity().x;
 				if (Direction.RIGHT.equals(actionToRun.getDirection())) {
 					velocityChange = NORMAL_WALK_SPEED - currentVelocity;
 				} else if (Direction.LEFT.equals(actionToRun.getDirection())) {
@@ -227,13 +247,13 @@ public abstract class Person extends MaterialObject implements Physical {
 					// TODO throw exception
 				}
 
-				final float force = mass * velocityChange / deltaTime;
+				forceX = mass * velocityChange / deltaTime;
 
-				this.body.applyForceToCenter(new Vector2(force, 0), true);
-
-				break;
+				this.body.applyForceToCenter(new Vector2(forceX, 0), true);
+				Gdx.app.debug("DEBUG", "Force applied to X axis ".concat(String.valueOf(forceX)));
+				continue;
 			default:
-				break;
+				continue;
 			}
 		}
 
@@ -248,6 +268,11 @@ public abstract class Person extends MaterialObject implements Physical {
 
 	public void walk(Direction direction) {
 		this.actionsPool.add(direction.equals(Direction.LEFT) ? ActionType.WALKING_LEFT : ActionType.WALKING_RIGHT);
+	}
+
+	public void stop(Direction direction) {
+		this.actionsPool
+				.add(direction.equals(Direction.LEFT) ? ActionType.STOP_WALKING_LEFT : ActionType.STOP_WALKING_RIGHT);
 	}
 
 	// TODO lembra que o X e Y do box2D são no centro

@@ -10,16 +10,14 @@ import com.badlogic.gdx.ApplicationAdapter;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Camera;
 import com.badlogic.gdx.graphics.Color;
-import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.OrthographicCamera;
-import com.badlogic.gdx.graphics.PerspectiveCamera;
 import com.badlogic.gdx.graphics.Pixmap;
 import com.badlogic.gdx.graphics.Pixmap.Format;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
+import com.badlogic.gdx.physics.box2d.Box2DDebugRenderer;
 import com.badlogic.gdx.utils.ScreenUtils;
 import com.badlogic.gdx.utils.viewport.ExtendViewport;
-import com.badlogic.gdx.utils.viewport.FitViewport;
 import com.badlogic.gdx.utils.viewport.Viewport;
 
 import br.com.lucasmteixeira.playground.game.InputProcessorPC;
@@ -49,12 +47,16 @@ public class Main extends ApplicationAdapter {
 	private int VIEWPORT_HEIGHT;
 
 	private Aventura aventura;
+	
+	//Box2DDebugRenderer debugRenderer;
 
 	private static final CircularFifoQueue<Long> frameTimes = new CircularFifoQueue<Long>(4);
 
 	@Override
 	public void create() {
 		Gdx.app.setLogLevel(Application.LOG_DEBUG);
+		
+		//debugRenderer = new Box2DDebugRenderer();
 		
 		this.aventura = new AventuraPadrao();
 
@@ -118,6 +120,8 @@ public class Main extends ApplicationAdapter {
 		}
 
 		batch.end();
+		
+		//debugRenderer.render(aventura.getWorld(), camera.combined);
 	}
 
 	@Override

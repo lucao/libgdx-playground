@@ -37,8 +37,14 @@ public class InputProcessorPC implements InputProcessor {
 
 	@Override
 	public boolean keyUp(int keycode) {
-		// TODO Auto-generated method stub
-		return false;
+		if (keycode == Input.Keys.D) {
+			Gdx.app.debug("DEBUG", "Dispatching stop walk right action");
+			player.stop(Direction.RIGHT);
+		} else if (keycode == Input.Keys.A) {
+			Gdx.app.debug("DEBUG", "Dispatching stop walk left action");
+			player.stop(Direction.LEFT);
+		}
+		return true;
 	}
 
 	@Override
