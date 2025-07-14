@@ -1,7 +1,6 @@
 package br.com.lucasmteixeira.playground.game.characters;
 
 import java.time.Instant;
-import java.time.temporal.TemporalAmount;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -9,7 +8,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.Stack;
 
 import org.apache.commons.collections4.queue.CircularFifoQueue;
 
@@ -20,20 +18,23 @@ import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.physics.box2d.Body;
 import com.badlogic.gdx.physics.box2d.BodyDef;
 import com.badlogic.gdx.physics.box2d.BodyDef.BodyType;
-
-import br.com.lucasmteixeira.playground.game.CollisionType;
-import br.com.lucasmteixeira.playground.game.GameObject;
-import br.com.lucasmteixeira.playground.game.MaterialObject;
-import br.com.lucasmteixeira.playground.game.Physical;
-import br.com.lucasmteixeira.playground.game.characters.actions.Action;
-import br.com.lucasmteixeira.playground.game.characters.actions.ActionType;
-import br.com.lucasmteixeira.playground.game.characters.actions.Direction;
-import br.com.lucasmteixeira.playground.game.exceptions.UntreatedCollision;
-
 import com.badlogic.gdx.physics.box2d.CircleShape;
 import com.badlogic.gdx.physics.box2d.Fixture;
 import com.badlogic.gdx.physics.box2d.FixtureDef;
 import com.badlogic.gdx.physics.box2d.World;
+
+import br.com.lucasmteixeira.playground.game.CollisionType;
+import br.com.lucasmteixeira.playground.game.MaterialObject;
+import br.com.lucasmteixeira.playground.game.Physical;
+import br.com.lucasmteixeira.playground.game.characters.actions.Action;
+import br.com.lucasmteixeira.playground.game.characters.actions.ActionType;
+import br.com.lucasmteixeira.playground.game.characters.actions.ContinuousAction;
+import br.com.lucasmteixeira.playground.game.characters.actions.Direction;
+import br.com.lucasmteixeira.playground.game.characters.actions.Idle;
+import br.com.lucasmteixeira.playground.game.characters.actions.Jump;
+import br.com.lucasmteixeira.playground.game.characters.actions.Stop;
+import br.com.lucasmteixeira.playground.game.characters.actions.Walk;
+import br.com.lucasmteixeira.playground.game.exceptions.UntreatedCollision;
 
 public abstract class Person extends MaterialObject implements Physical {
 	private static final GdxLogger LOGGER = new GdxLogger();
@@ -61,6 +62,7 @@ public abstract class Person extends MaterialObject implements Physical {
 	private final CircularFifoQueue<Action> actionsHistory;
 
 	private final Set<Action> runningActions;
+	private final Map<ActionType, ContinuousAction> continuousUnfinishedActions;
 	private final Set<Action> actionsToRun;
 
 	protected Person(Float x, Float y, Float w, Float h, Texture texture, World world) {
@@ -98,6 +100,7 @@ public abstract class Person extends MaterialObject implements Physical {
 		this.actionsHistory = new CircularFifoQueue<Action>(50);
 
 		this.runningActions = new HashSet<Action>();
+		this.continuousUnfinishedActions = new HashMap<ActionType, ContinuousAction>();
 		this.actionsToRun = new HashSet<Action>();
 	}
 
@@ -144,8 +147,6 @@ public abstract class Person extends MaterialObject implements Physical {
 					runningActionsIterator.remove();
 				}
 			} else {
-				// action with no cooldown
-				this.actionsToRun.add(action);
 				runningActionsIterator.remove();
 			}
 		}
@@ -153,9 +154,42 @@ public abstract class Person extends MaterialObject implements Physical {
 		final Iterator<ActionType> actionsPoolIterator = this.actionsPool.iterator();
 
 		while (actionsPoolIterator.hasNext()) {
-			final Action actionToRun = Action.create(actionsPoolIterator.next(), now, deltaTime);
+			final Action actionToRun;
+			switch (actionsPoolIterator.next()) {
+			case JUMP:
+				actionToRun = new Jump(now);
+				break;
+			case STOP_WALKING_LEFT:
+				actionToRun = new Stop(Direction.LEFT, now);
+				break;
+			case STOP_WALKING_RIGHT:
+				actionToRun = new Stop(Direction.RIGHT, now);
+				break;
+			case WALKING_LEFT:
+				actionToRun = new Walk(Direction.LEFT, now);
+				break;
+			case WALKING_RIGHT:
+				actionToRun = new Walk(Direction.RIGHT, now);
+				break;
+			default:
+				actionToRun = new Idle(now);
+				break;
+			}
+
+			for (ActionType actionType : actionToRun.getInterruptableActions()) {
+				if (this.continuousUnfinishedActions.containsKey(actionType)) {
+					this.continuousUnfinishedActions.get(actionType).finish(actionToRun.getType(),
+							now.plusMillis(deltaTime));
+					this.actionsHistory.add(this.continuousUnfinishedActions.remove(actionType));
+				}
+			}
+
 			if (!this.runningActions.add(actionToRun))
 				continue;
+
+			if (actionToRun instanceof ContinuousAction) {
+				this.continuousUnfinishedActions.put(actionToRun.getType(), (ContinuousAction) actionToRun);
+			}
 			this.actionsToRun.add(actionToRun);
 		}
 
@@ -171,8 +205,15 @@ public abstract class Person extends MaterialObject implements Physical {
 					grounded = false;
 				}
 				continue;
-			case WALK_RIGHT:
-			case WALK_LEFT:
+
+			case STOP_WALKING_LEFT:
+			case STOP_WALKING_RIGHT:
+				// TODO check for stopping actions first
+
+			case WALKING_RIGHT:
+			case WALKING_LEFT:
+				// TODO check for conflicting continous running actions
+
 				Gdx.app.debug("DEBUG", "running action WALK, for: ".concat(this.getClass().toString()));
 				final float mass = this.body.getMass();
 				final float currentVelocity = this.body.getLinearVelocity().x;
@@ -203,6 +244,10 @@ public abstract class Person extends MaterialObject implements Physical {
 
 	public void jump() {
 		this.actionsPool.add(ActionType.JUMP);
+	}
+
+	public void walk(Direction direction) {
+		this.actionsPool.add(direction.equals(Direction.LEFT) ? ActionType.WALKING_LEFT : ActionType.WALKING_RIGHT);
 	}
 
 	// TODO lembra que o X e Y do box2D são no centro

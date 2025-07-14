@@ -4,7 +4,8 @@ import java.time.Duration;
 import java.util.Optional;
 
 public enum ActionType {
-	JUMP(), WALK_RIGHT(Optional.empty()), WALK_LEFT(Optional.empty());
+	IDLE(Optional.empty()), JUMP(), WALKING_RIGHT(Optional.empty()), WALKING_LEFT(Optional.empty()), STOP_WALKING_RIGHT(Optional.empty()),
+	STOP_WALKING_LEFT(Optional.empty());
 
 	ActionType() {
 		this.cooldown = Optional.of(Duration.ofSeconds(1));

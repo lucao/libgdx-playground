@@ -6,10 +6,11 @@ import com.badlogic.gdx.InputProcessor;
 import com.badlogic.gdx.graphics.Camera;
 import com.badlogic.gdx.math.Vector3;
 
+import br.com.lucasmteixeira.playground.game.characters.actions.Direction;
 import br.com.lucasmteixeira.playground.game.characters.player.Player;
 
 public class InputProcessorPC implements InputProcessor {
-	
+
 	private final Player player;
 	private final Camera camera;
 
@@ -23,6 +24,13 @@ public class InputProcessorPC implements InputProcessor {
 		if (keycode == Input.Keys.SPACE) {
 			Gdx.app.debug("DEBUG", "Dispatching jump action");
 			player.jump();
+		}
+		if (keycode == Input.Keys.D) {
+			Gdx.app.debug("DEBUG", "Dispatching walk right action");
+			player.walk(Direction.RIGHT);
+		} else if (keycode == Input.Keys.A) {
+			Gdx.app.debug("DEBUG", "Dispatching walk left action");
+			player.walk(Direction.LEFT);
 		}
 		return true;
 	}

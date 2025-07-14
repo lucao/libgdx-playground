@@ -3,16 +3,15 @@ package br.com.lucasmteixeira.playground.game.characters.actions;
 import java.time.Instant;
 import java.util.List;
 
-public class Jump extends InstantAction {
+public class Idle extends ContinuousAction {
 
-	public Jump(Instant begin) {
-		super(ActionType.JUMP, begin);
-
+	public Idle(Instant begin) {
+		super(ActionType.IDLE, begin);
 	}
 
 	@Override
 	public List<ActionType> getInterruptableActions() {
-		return List.of(ActionType.IDLE);
+		return List.of(ActionType.WALKING_LEFT, ActionType.WALKING_RIGHT);
 	}
 
 }

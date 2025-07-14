@@ -1,6 +1,7 @@
 package br.com.lucasmteixeira.playground.game.characters.actions;
 
 import java.time.Instant;
+import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 
@@ -12,6 +13,27 @@ public abstract class Action {
 		super();
 		this.type = type;
 		this.begin = begin;
+	}
+	
+	public abstract List<ActionType> getInterruptableActions();
+	
+	public static Action create(ActionType actionType, Instant now, Long deltaTime) {
+		switch (actionType) {
+		case JUMP:
+			return new Jump(now);
+		case STOP_WALKING_LEFT:
+			break;
+		case STOP_WALKING_RIGHT:
+			break;
+		case WALKING_LEFT:
+			return new Walk(Direction.LEFT, now);
+		case WALKING_RIGHT:
+			return new Walk(Direction.RIGHT, now);
+		default:
+			break;
+		
+		}
+		return null;
 	}
 
 	public ActionType getType() {
