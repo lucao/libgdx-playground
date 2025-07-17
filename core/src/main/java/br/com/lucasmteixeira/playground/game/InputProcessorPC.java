@@ -25,13 +25,6 @@ public class InputProcessorPC implements InputProcessor {
 			Gdx.app.debug("DEBUG", "Dispatching jump action");
 			player.jump();
 		}
-		if (keycode == Input.Keys.D) {
-			Gdx.app.debug("DEBUG", "Dispatching walk right action");
-			player.walk(Direction.RIGHT);
-		} else if (keycode == Input.Keys.A) {
-			Gdx.app.debug("DEBUG", "Dispatching walk left action");
-			player.walk(Direction.LEFT);
-		}
 		return true;
 	}
 

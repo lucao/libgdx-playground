@@ -21,8 +21,11 @@ import com.badlogic.gdx.physics.box2d.BodyDef.BodyType;
 import com.badlogic.gdx.physics.box2d.CircleShape;
 import com.badlogic.gdx.physics.box2d.Fixture;
 import com.badlogic.gdx.physics.box2d.FixtureDef;
+import com.badlogic.gdx.physics.box2d.MassData;
+import com.badlogic.gdx.physics.box2d.PolygonShape;
 import com.badlogic.gdx.physics.box2d.World;
 
+import br.com.lucasmteixeira.playground.Main;
 import br.com.lucasmteixeira.playground.game.CollisionType;
 import br.com.lucasmteixeira.playground.game.MaterialObject;
 import br.com.lucasmteixeira.playground.game.Physical;
@@ -55,8 +58,8 @@ public abstract class Person extends MaterialObject implements Physical {
 
 	protected boolean grounded;
 
-	private static final Integer NORMAL_JUMP_FORCE = 20000;
-	private static final Float NORMAL_WALK_SPEED = 100f;// TODO walk
+	private static final Integer NORMAL_JUMP_FORCE = 7000;
+	private static final Float NORMAL_WALK_SPEED = 50f;// TODO walk
 
 	private final List<ActionType> actionsPool;
 	private final CircularFifoQueue<Action> actionsHistory;
@@ -79,20 +82,24 @@ public abstract class Person extends MaterialObject implements Physical {
 		this.body = world.createBody(bodyDef);
 
 		// Create a circle shape and set its radius to 6
-		CircleShape circle = new CircleShape();
-		circle.setRadius(w / 2);
+		PolygonShape personBox = new PolygonShape();
+		personBox.setAsBox(w / 2, h / 2);
 
 		// Create a fixture definition to apply our shape to
 		FixtureDef fixtureDef = new FixtureDef();
-		fixtureDef.shape = circle;
+		fixtureDef.shape = personBox;
 		fixtureDef.density = 1.0f;
 		fixtureDef.friction = 0.0f;
 		fixtureDef.restitution = 0.0f;
 
 		this.fixture = this.body.createFixture(fixtureDef);
-		circle.dispose();
+		personBox.dispose();
 
 		this.body.setUserData(this);
+
+		MassData mass = new MassData();
+		mass.mass = 80.0f;
+		this.body.setMassData(mass);
 
 		this.grounded = false;
 
@@ -195,11 +202,10 @@ public abstract class Person extends MaterialObject implements Physical {
 
 		this.actionsPool.clear();
 
+		final float deltaVelocity = NORMAL_WALK_SPEED - Math.abs(this.body.getLinearVelocity().x);
+		final float forceX = this.body.getMass() * (deltaVelocity / (deltaTime.floatValue() / 1000f));
 		for (final Action actionToRun : this.actionsToRun) {
-			final float mass;
-			final float currentVelocity;
-			final float velocityChange;
-			final float forceX;
+
 			this.actionsHistory.add(actionToRun);
 			switch (actionToRun.getType()) {
 			case JUMP:
@@ -211,46 +217,28 @@ public abstract class Person extends MaterialObject implements Physical {
 				continue;
 //TODO verificar essa palhaçada aqui
 			case STOP_WALKING_LEFT:
+				this.body.applyLinearImpulse(new Vector2(-forceX, 0), this.body.getLocalCenter(), true);
+				continue;
 			case STOP_WALKING_RIGHT:
-				Gdx.app.debug("DEBUG", "running action STOP_WALK, for: ".concat(this.getClass().toString()));
-				mass = this.body.getMass();
-				currentVelocity = this.body.getLinearVelocity().x;
-				
-				Gdx.app.debug("DEBUG", "currentVelocity: ".concat(String.valueOf(currentVelocity)));
-				Gdx.app.debug("DEBUG", "direction: ".concat(String.valueOf(actionToRun.getDirection())));
-				if (Direction.RIGHT.equals(actionToRun.getDirection())) {
-					forceX = mass * -currentVelocity / deltaTime;
-				} else if (Direction.LEFT.equals(actionToRun.getDirection())) {
-					forceX = mass * currentVelocity / deltaTime;
-				} else {
-					forceX = 0.0f;
-					// TODO throw exception
-				}
-
-				this.body.applyForceToCenter(new Vector2(forceX, 0), true);
-				
-				Gdx.app.debug("DEBUG", "Force applied to X axis ".concat(String.valueOf(forceX)));
+				this.body.setLinearVelocity(0f, this.body.getLinearVelocity().y);
+				//this.body.applyLinearImpulse(new Vector2(-forceX, 0), this.body.getLocalCenter(), true);
 				continue;
 			case WALKING_RIGHT:
-			case WALKING_LEFT:
-				// TODO check for conflicting continous running actions
-
-				Gdx.app.debug("DEBUG", "running action WALK, for: ".concat(this.getClass().toString()));
-				mass = this.body.getMass();
-				currentVelocity = this.body.getLinearVelocity().x;
-				if (Direction.RIGHT.equals(actionToRun.getDirection())) {
-					velocityChange = NORMAL_WALK_SPEED - currentVelocity;
-				} else if (Direction.LEFT.equals(actionToRun.getDirection())) {
-					velocityChange = -NORMAL_WALK_SPEED - currentVelocity;
-				} else {
-					velocityChange = 0.0f;
-					// TODO throw exception
-				}
-
-				forceX = mass * velocityChange / deltaTime;
+				Gdx.app.debug("DEBUG", "deltaVelocity (m/s): ".concat(String.valueOf(deltaVelocity)));
+				Gdx.app.debug("DEBUG", "acceleration (m/s²): ".concat(String.valueOf(deltaVelocity / (deltaTime.floatValue() / 1000f))));
+				Gdx.app.debug("DEBUG", "deltaTime (seconds): ".concat(String.valueOf((deltaTime.floatValue() / 1000f))));
 
 				this.body.applyForceToCenter(new Vector2(forceX, 0), true);
 				Gdx.app.debug("DEBUG", "Force applied to X axis ".concat(String.valueOf(forceX)));
+				continue;
+			case WALKING_LEFT:
+				Gdx.app.debug("DEBUG", "deltaVelocity (m/s): ".concat(String.valueOf(deltaVelocity)));
+				Gdx.app.debug("DEBUG", "acceleration (m/s²): ".concat(String.valueOf(deltaVelocity / (deltaTime.floatValue() / 1000f))));
+				Gdx.app.debug("DEBUG", "deltaTime (seconds): ".concat(String.valueOf((deltaTime.floatValue() / 1000f))));
+
+				this.body.applyForceToCenter(new Vector2(-forceX, 0), true);
+
+				Gdx.app.debug("DEBUG", "Force applied to X axis ".concat(String.valueOf(-forceX)));
 				continue;
 			default:
 				continue;

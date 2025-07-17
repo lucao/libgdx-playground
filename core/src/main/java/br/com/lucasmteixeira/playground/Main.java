@@ -47,17 +47,20 @@ public class Main extends ApplicationAdapter {
 	private int VIEWPORT_HEIGHT;
 
 	private Aventura aventura;
-	
-	//Box2DDebugRenderer debugRenderer;
+
+	// TODO set configuration
+	public static float frameRate = 1f / 60f;
+
+	// Box2DDebugRenderer debugRenderer;
 
 	private static final CircularFifoQueue<Long> frameTimes = new CircularFifoQueue<Long>(4);
 
 	@Override
 	public void create() {
 		Gdx.app.setLogLevel(Application.LOG_DEBUG);
-		
-		//debugRenderer = new Box2DDebugRenderer();
-		
+
+		// debugRenderer = new Box2DDebugRenderer();
+
 		this.aventura = new AventuraPadrao();
 
 		// Create camera and viewport
@@ -97,8 +100,11 @@ public class Main extends ApplicationAdapter {
 	public void render() {
 		final Instant now = Instant.now();
 		ScreenUtils.clear(Color.DARK_GRAY);
+//		Gdx.app.debug("DEBUG",
+//				"deltaTime for frame: ".concat(String.valueOf(now.toEpochMilli() - Main.frameTimes.peek())));
 		final List<MaterialObject> drawableObjects = this.aventura.run(this.camera, now,
-				now.getEpochSecond() - Main.frameTimes.peek());
+				now.toEpochMilli() - Main.frameTimes.peek());
+		Main.frameTimes.offer(now.toEpochMilli());
 
 		viewport.apply();
 		// camera.position.x = ((followedObject.x + followedObject.w / 2) -
@@ -120,8 +126,8 @@ public class Main extends ApplicationAdapter {
 		}
 
 		batch.end();
-		
-		//debugRenderer.render(aventura.getWorld(), camera.combined);
+
+		// debugRenderer.render(aventura.getWorld(), camera.combined);
 	}
 
 	@Override
