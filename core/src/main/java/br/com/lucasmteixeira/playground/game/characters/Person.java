@@ -18,14 +18,12 @@ import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.physics.box2d.Body;
 import com.badlogic.gdx.physics.box2d.BodyDef;
 import com.badlogic.gdx.physics.box2d.BodyDef.BodyType;
-import com.badlogic.gdx.physics.box2d.CircleShape;
 import com.badlogic.gdx.physics.box2d.Fixture;
 import com.badlogic.gdx.physics.box2d.FixtureDef;
 import com.badlogic.gdx.physics.box2d.MassData;
 import com.badlogic.gdx.physics.box2d.PolygonShape;
 import com.badlogic.gdx.physics.box2d.World;
 
-import br.com.lucasmteixeira.playground.Main;
 import br.com.lucasmteixeira.playground.game.CollisionType;
 import br.com.lucasmteixeira.playground.game.MaterialObject;
 import br.com.lucasmteixeira.playground.game.Physical;
@@ -89,7 +87,7 @@ public abstract class Person extends MaterialObject implements Physical {
 		FixtureDef fixtureDef = new FixtureDef();
 		fixtureDef.shape = personBox;
 		fixtureDef.density = 1.0f;
-		fixtureDef.friction = 0.0f;
+		fixtureDef.friction = 1.0f;
 		fixtureDef.restitution = 0.0f;
 
 		this.fixture = this.body.createFixture(fixtureDef);
@@ -144,20 +142,6 @@ public abstract class Person extends MaterialObject implements Physical {
 
 	@Override
 	public void play(Instant now, Long deltaTime) {
-		// clear actions that are already executed
-		final Iterator<Action> runningActionsIterator = this.runningActions.iterator();
-		while (runningActionsIterator.hasNext()) {
-			Action action = runningActionsIterator.next();
-			if (action.getEnd().isPresent()) {
-				// action with cooldown
-				if (now.isBefore(action.getEnd().get())) {
-					runningActionsIterator.remove();
-				}
-			} else {
-				runningActionsIterator.remove();
-			}
-		}
-
 		final Iterator<ActionType> actionsPoolIterator = this.actionsPool.iterator();
 
 		while (actionsPoolIterator.hasNext()) {
@@ -185,10 +169,15 @@ public abstract class Person extends MaterialObject implements Physical {
 
 			for (ActionType actionType : actionToRun.getInterruptableActions()) {
 				if (this.continuousUnfinishedActions.containsKey(actionType)) {
+					Gdx.app.debug("DEBUG", "interrupting action ".concat(String.valueOf(actionType)));
 					this.continuousUnfinishedActions.get(actionType).finish(actionToRun.getType(),
 							now.plusMillis(deltaTime));
 					this.actionsHistory.add(this.continuousUnfinishedActions.remove(actionType));
 				}
+			}
+
+			if (this.continuousUnfinishedActions.containsKey(actionToRun.getType())) {
+				this.continuousUnfinishedActions.get(actionToRun.getType()).continueAction(now.plusMillis(deltaTime));
 			}
 
 			if (!this.runningActions.add(actionToRun))
@@ -202,8 +191,29 @@ public abstract class Person extends MaterialObject implements Physical {
 
 		this.actionsPool.clear();
 
+		// clear actions that are already executed TODO continue with continuous actions
+		final Iterator<Action> runningActionsIterator = this.runningActions.iterator();
+		while (runningActionsIterator.hasNext()) {
+			Action action = runningActionsIterator.next();
+			if (action.getEnd().isPresent()) {
+				// action with cooldown
+				if (now.isAfter(action.getEnd().get())) {
+					Gdx.app.debug("DEBUG", "ending continuous action ".concat(String.valueOf(action.getType())));
+					runningActionsIterator.remove();
+				} else {
+					this.actionsToRun.add(action);
+				}
+			} else {
+				//Gdx.app.debug("DEBUG", "ending instant action ".concat(String.valueOf(action.getType())));
+				this.actionsToRun.add(action);
+			}
+		}
+
 		final float deltaVelocity = NORMAL_WALK_SPEED - Math.abs(this.body.getLinearVelocity().x);
-		final float forceX = this.body.getMass() * (deltaVelocity / (deltaTime.floatValue() / 1000f));
+		final float walkForce = this.body.getMass() * (deltaVelocity / (deltaTime.floatValue() / 1000f));
+
+		final float stopDeltaVelocity = Math.abs(this.body.getLinearVelocity().x);
+		final float stopForce = this.body.getMass() * (stopDeltaVelocity / (deltaTime.floatValue() / 1000f));
 		for (final Action actionToRun : this.actionsToRun) {
 
 			this.actionsHistory.add(actionToRun);
@@ -214,34 +224,22 @@ public abstract class Person extends MaterialObject implements Physical {
 					this.body.applyLinearImpulse(new Vector2(0, NORMAL_JUMP_FORCE), this.body.getLocalCenter(), true);
 					grounded = false;
 				}
-				continue;
-//TODO verificar essa palhaçada aqui
+				break;
 			case STOP_WALKING_LEFT:
-				this.body.applyLinearImpulse(new Vector2(-forceX, 0), this.body.getLocalCenter(), true);
-				continue;
+				this.body.applyForceToCenter(new Vector2(stopForce, 0), true);
+				break;
 			case STOP_WALKING_RIGHT:
-				this.body.setLinearVelocity(0f, this.body.getLinearVelocity().y);
-				//this.body.applyLinearImpulse(new Vector2(-forceX, 0), this.body.getLocalCenter(), true);
-				continue;
+
+				this.body.applyForceToCenter(new Vector2(-stopForce, 0), true);
+				break;
 			case WALKING_RIGHT:
-				Gdx.app.debug("DEBUG", "deltaVelocity (m/s): ".concat(String.valueOf(deltaVelocity)));
-				Gdx.app.debug("DEBUG", "acceleration (m/s²): ".concat(String.valueOf(deltaVelocity / (deltaTime.floatValue() / 1000f))));
-				Gdx.app.debug("DEBUG", "deltaTime (seconds): ".concat(String.valueOf((deltaTime.floatValue() / 1000f))));
-
-				this.body.applyForceToCenter(new Vector2(forceX, 0), true);
-				Gdx.app.debug("DEBUG", "Force applied to X axis ".concat(String.valueOf(forceX)));
-				continue;
+				this.body.applyForceToCenter(new Vector2(walkForce, 0), true);
+				break;
 			case WALKING_LEFT:
-				Gdx.app.debug("DEBUG", "deltaVelocity (m/s): ".concat(String.valueOf(deltaVelocity)));
-				Gdx.app.debug("DEBUG", "acceleration (m/s²): ".concat(String.valueOf(deltaVelocity / (deltaTime.floatValue() / 1000f))));
-				Gdx.app.debug("DEBUG", "deltaTime (seconds): ".concat(String.valueOf((deltaTime.floatValue() / 1000f))));
-
-				this.body.applyForceToCenter(new Vector2(-forceX, 0), true);
-
-				Gdx.app.debug("DEBUG", "Force applied to X axis ".concat(String.valueOf(-forceX)));
-				continue;
+				this.body.applyForceToCenter(new Vector2(-walkForce, 0), true);
+				break;
 			default:
-				continue;
+				break;
 			}
 		}
 

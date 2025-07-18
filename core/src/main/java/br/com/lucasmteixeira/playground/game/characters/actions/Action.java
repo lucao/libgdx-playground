@@ -16,25 +16,6 @@ public abstract class Action {
 	}
 	
 	public abstract List<ActionType> getInterruptableActions();
-	
-	public static Action create(ActionType actionType, Instant now, Long deltaTime) {
-		switch (actionType) {
-		case JUMP:
-			return new Jump(now);
-		case STOP_WALKING_LEFT:
-			break;
-		case STOP_WALKING_RIGHT:
-			break;
-		case WALKING_LEFT:
-			return new Walk(Direction.LEFT, now);
-		case WALKING_RIGHT:
-			return new Walk(Direction.RIGHT, now);
-		default:
-			break;
-		
-		}
-		return null;
-	}
 
 	public ActionType getType() {
 		return type;

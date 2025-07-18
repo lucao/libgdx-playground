@@ -21,10 +21,8 @@ public class Player extends Person {
 	@Override
 	public void play(Instant now, Long deltaTime) {
 		if (Gdx.input.isKeyPressed(Input.Keys.D)) {
-			Gdx.app.debug("DEBUG", "Dispatching walk right action");
 			this.walk(Direction.RIGHT);
 		} else if (Gdx.input.isKeyPressed(Input.Keys.A)) {
-			Gdx.app.debug("DEBUG", "Dispatching walk left action");
 			this.walk(Direction.LEFT);
 		}
 		super.play(now, deltaTime);

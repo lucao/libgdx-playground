@@ -4,7 +4,7 @@ import java.time.Instant;
 import java.util.List;
 
 public class Walk extends ContinuousAction {
-	
+
 	private final Direction direction;
 
 	public Walk(Direction direction, Instant begin) {
@@ -19,6 +19,6 @@ public class Walk extends ContinuousAction {
 
 	@Override
 	public List<ActionType> getInterruptableActions() {
-		return List.of(ActionType.IDLE);
+		return List.of(ActionType.IDLE, ActionType.STOP_WALKING_LEFT, ActionType.STOP_WALKING_RIGHT);
 	}
 }
