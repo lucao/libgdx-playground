@@ -12,7 +12,6 @@ import java.util.Set;
 import org.apache.commons.collections4.queue.CircularFifoQueue;
 
 import com.badlogic.gdx.Gdx;
-import com.badlogic.gdx.ai.GdxLogger;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.physics.box2d.Body;
@@ -38,7 +37,6 @@ import br.com.lucasmteixeira.playground.game.characters.actions.Walk;
 import br.com.lucasmteixeira.playground.game.exceptions.UntreatedCollision;
 
 public abstract class Person extends MaterialObject implements Physical {
-	private static final GdxLogger LOGGER = new GdxLogger();
 
 	protected final Body body;
 
