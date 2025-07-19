@@ -54,7 +54,7 @@ public abstract class Person extends MaterialObject implements Physical {
 
 	protected boolean grounded;
 
-	private static final Integer NORMAL_JUMP_FORCE = 7000;
+	private static final Integer NORMAL_JUMP_FORCE = 5000;
 	private static final Float NORMAL_WALK_SPEED = 50f;// TODO walk
 
 	private final List<ActionType> actionsPool;
@@ -85,7 +85,7 @@ public abstract class Person extends MaterialObject implements Physical {
 		FixtureDef fixtureDef = new FixtureDef();
 		fixtureDef.shape = personBox;
 		fixtureDef.density = 1.0f;
-		fixtureDef.friction = 1.0f;
+		fixtureDef.friction = 0.1f;
 		fixtureDef.restitution = 0.0f;
 
 		this.fixture = this.body.createFixture(fixtureDef);
@@ -202,12 +202,14 @@ public abstract class Person extends MaterialObject implements Physical {
 					this.actionsToRun.add(action);
 				}
 			} else {
-				//Gdx.app.debug("DEBUG", "ending instant action ".concat(String.valueOf(action.getType())));
+				// Gdx.app.debug("DEBUG", "ending instant action
+				// ".concat(String.valueOf(action.getType())));
 				this.actionsToRun.add(action);
 			}
 		}
 
-		final float deltaVelocity = NORMAL_WALK_SPEED - Math.abs(this.body.getLinearVelocity().x);
+		final float personVelocity = this.body.getLinearVelocity().x;
+		final float deltaVelocity = NORMAL_WALK_SPEED - Math.abs(personVelocity);
 		final float walkForce = this.body.getMass() * (deltaVelocity / (deltaTime.floatValue() / 1000f));
 
 		final float stopDeltaVelocity = Math.abs(this.body.getLinearVelocity().x);
@@ -224,11 +226,14 @@ public abstract class Person extends MaterialObject implements Physical {
 				}
 				break;
 			case STOP_WALKING_LEFT:
-				this.body.applyForceToCenter(new Vector2(stopForce, 0), true);
+				if (personVelocity < 0) {
+					this.body.applyForceToCenter(new Vector2(stopForce, 0), true);
+				}
 				break;
 			case STOP_WALKING_RIGHT:
-
-				this.body.applyForceToCenter(new Vector2(-stopForce, 0), true);
+				if (personVelocity > 0) {
+					this.body.applyForceToCenter(new Vector2(-stopForce, 0), true);
+				}
 				break;
 			case WALKING_RIGHT:
 				this.body.applyForceToCenter(new Vector2(walkForce, 0), true);
