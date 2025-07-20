@@ -20,10 +20,12 @@ import com.badlogic.gdx.utils.ScreenUtils;
 import com.badlogic.gdx.utils.viewport.ExtendViewport;
 import com.badlogic.gdx.utils.viewport.Viewport;
 
+import br.com.lucasmteixeira.playground.game.GameObject;
 import br.com.lucasmteixeira.playground.game.InputProcessorPC;
 import br.com.lucasmteixeira.playground.game.MaterialObject;
 import br.com.lucasmteixeira.playground.game.aventuras.Aventura;
 import br.com.lucasmteixeira.playground.game.aventuras.AventuraPadrao;
+import br.com.lucasmteixeira.playground.game.characters.player.NarutoPlayer;
 import br.com.lucasmteixeira.playground.game.characters.player.Player;
 import br.com.lucasmteixeira.playground.game.scenery.Ground;
 
@@ -33,7 +35,7 @@ import br.com.lucasmteixeira.playground.game.scenery.Ground;
  */
 public class Main extends ApplicationAdapter {
 	private Camera camera;
-	private MaterialObject followedObject;
+	private GameObject followedObject;
 
 	public final static float LERP = 0.1f;
 
@@ -68,7 +70,7 @@ public class Main extends ApplicationAdapter {
 		this.VIEWPORT_HEIGHT = Math
 				.round(WORLD_DISTANCE_UNIT * ((float) Gdx.graphics.getHeight() / Gdx.graphics.getWidth()));
 
-		final Player player = new Player(0f, 0f, 20f, 20f, new Texture("libgdx.png"), this.aventura.getWorld());
+		final Player player = new NarutoPlayer(0f, 0f, 20f, 20f, this.aventura.getWorld());
 		this.followedObject = player;
 		this.aventura.addGameObject(player);
 
@@ -95,13 +97,14 @@ public class Main extends ApplicationAdapter {
 	public void resize(int width, int height) {
 		viewport.update(width, height);
 	}
-
+	
+	private static float animationStateTime;
 	@Override
 	public void render() {
+		animationStateTime += Gdx.graphics.getDeltaTime(); // Accumulate elapsed animation time
 		final Instant now = Instant.now();
 		ScreenUtils.clear(Color.DARK_GRAY);
-//		Gdx.app.debug("DEBUG",
-//				"deltaTime for frame: ".concat(String.valueOf(now.toEpochMilli() - Main.frameTimes.peek())));
+		
 		final List<MaterialObject> drawableObjects = this.aventura.run(this.camera, now,
 				now.toEpochMilli() - Main.frameTimes.peek());
 		Main.frameTimes.offer(now.toEpochMilli());
@@ -121,7 +124,7 @@ public class Main extends ApplicationAdapter {
 //			Gdx.app.log(materialObject.getClass().getName(),
 //					"X/Y/W/H: " + materialObject.getX().toString() + "/" + materialObject.getY().toString() + "/"
 //							+ materialObject.getW().toString() + "/" + materialObject.getH().toString());
-			batch.draw(materialObject.getTexture(), materialObject.getX(), materialObject.getY(), materialObject.getW(),
+			batch.draw(materialObject.getTexture(animationStateTime), materialObject.getX(), materialObject.getY(), materialObject.getW(),
 					materialObject.getH());
 		}
 

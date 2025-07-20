@@ -2,7 +2,6 @@ package br.com.lucasmteixeira.playground.game.characters;
 
 import java.time.Instant;
 import java.util.ArrayList;
-import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -14,8 +13,6 @@ import org.apache.commons.collections4.queue.CircularFifoQueue;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Texture;
-import com.badlogic.gdx.graphics.g2d.Animation;
-import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.physics.box2d.Body;
 import com.badlogic.gdx.physics.box2d.BodyDef;
@@ -71,7 +68,7 @@ public abstract class Person extends AnimatedMaterialObject implements Physical 
 
 	protected Person(Float x, Float y, Float w, Float h, Texture texture, World world) {
 		//TODO add a enumMap default for any person (could be random)
-		super(x, y, w, h, texture, new EnumMap<ActionType, Animation<TextureRegion>>(ActionType.class));
+		super(x, y, w, h, texture);
 
 		// First we create a body definition
 		BodyDef bodyDef = new BodyDef();
