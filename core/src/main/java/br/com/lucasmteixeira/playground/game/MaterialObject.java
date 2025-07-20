@@ -18,7 +18,7 @@ public abstract class MaterialObject extends GameObject {
 		this.texture = texture;
 	}
 
-	public TextureRegion getTexture(float animationStateTime) {
+	public TextureRegion getTexture() {
 		return new TextureRegion(texture);
 	}
 

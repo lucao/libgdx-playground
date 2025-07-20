@@ -64,7 +64,7 @@ public abstract class Person extends AnimatedMaterialObject implements Physical 
 	private final Map<ActionType, ContinuousAction> continuousUnfinishedActions;
 	private final Set<Action> actionsToRun;
 
-	private Direction walkingDirection;
+	private Direction direction;
 
 	protected Person(Float x, Float y, Float w, Float h, Texture texture, World world) {
 		//TODO add a enumMap default for any person (could be random)
@@ -109,7 +109,7 @@ public abstract class Person extends AnimatedMaterialObject implements Physical 
 		this.continuousUnfinishedActions = new HashMap<ActionType, ContinuousAction>();
 		this.actionsToRun = new HashSet<Action>();
 
-		this.walkingDirection = Direction.NONE;
+		this.direction = Direction.NONE;
 	}
 
 	@Override
@@ -232,27 +232,27 @@ public abstract class Person extends AnimatedMaterialObject implements Physical 
 				}
 				break;
 			case STOP_WALKING_LEFT:
-				if (Direction.LEFT.equals(this.walkingDirection) || Direction.NONE.equals(this.walkingDirection)) {
+				if (Direction.LEFT.equals(this.direction) || Direction.NONE.equals(this.direction)) {
 					this.body.applyForceToCenter(new Vector2(-stopForce, 0), true);
-					this.walkingDirection = Direction.NONE;
+					this.direction = Direction.NONE;
 				}
 				break;
 			case STOP_WALKING_RIGHT:
-				if (Direction.RIGHT.equals(this.walkingDirection) || Direction.NONE.equals(this.walkingDirection)) {
+				if (Direction.RIGHT.equals(this.direction) || Direction.NONE.equals(this.direction)) {
 					this.body.applyForceToCenter(new Vector2(-stopForce, 0), true);
-					this.walkingDirection = Direction.NONE;
+					this.direction = Direction.NONE;
 				}
 				break;
 			case WALKING_RIGHT:
-				if (Direction.RIGHT.equals(this.walkingDirection) || Direction.NONE.equals(this.walkingDirection)) {
+				if (Direction.RIGHT.equals(this.direction) || Direction.NONE.equals(this.direction)) {
 					this.body.applyForceToCenter(new Vector2(walkForce, 0), true);
-					this.walkingDirection = Direction.RIGHT;
+					this.direction = Direction.RIGHT;
 				}
 				break;
 			case WALKING_LEFT:
-				if (Direction.LEFT.equals(this.walkingDirection) || Direction.NONE.equals(this.walkingDirection)) {
+				if (Direction.LEFT.equals(this.direction) || Direction.NONE.equals(this.direction)) {
 					this.body.applyForceToCenter(new Vector2(-walkForce, 0), true);
-					this.walkingDirection = Direction.LEFT;
+					this.direction = Direction.LEFT;
 				}
 				break;
 			default:

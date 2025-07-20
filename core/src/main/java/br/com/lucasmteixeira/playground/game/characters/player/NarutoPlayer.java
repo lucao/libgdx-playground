@@ -24,5 +24,6 @@ public class NarutoPlayer extends Player {
 		
 		this.animations.put(AnimationType.IDLE,
 				new Animation<TextureRegion>(AnimatedMaterialObject.FRAME_INTERVAL, idleFrames));
+		
 	}
 }

@@ -97,14 +97,12 @@ public class Main extends ApplicationAdapter {
 	public void resize(int width, int height) {
 		viewport.update(width, height);
 	}
-	
-	private static float animationStateTime;
+
 	@Override
 	public void render() {
-		animationStateTime += Gdx.graphics.getDeltaTime(); // Accumulate elapsed animation time
 		final Instant now = Instant.now();
 		ScreenUtils.clear(Color.DARK_GRAY);
-		
+
 		final List<MaterialObject> drawableObjects = this.aventura.run(this.camera, now,
 				now.toEpochMilli() - Main.frameTimes.peek());
 		Main.frameTimes.offer(now.toEpochMilli());
@@ -124,7 +122,7 @@ public class Main extends ApplicationAdapter {
 //			Gdx.app.log(materialObject.getClass().getName(),
 //					"X/Y/W/H: " + materialObject.getX().toString() + "/" + materialObject.getY().toString() + "/"
 //							+ materialObject.getW().toString() + "/" + materialObject.getH().toString());
-			batch.draw(materialObject.getTexture(animationStateTime), materialObject.getX(), materialObject.getY(), materialObject.getW(),
+			batch.draw(materialObject.getTexture(), materialObject.getX(), materialObject.getY(), materialObject.getW(),
 					materialObject.getH());
 		}
 
