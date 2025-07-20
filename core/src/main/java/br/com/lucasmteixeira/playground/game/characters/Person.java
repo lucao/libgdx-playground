@@ -13,6 +13,7 @@ import org.apache.commons.collections4.queue.CircularFifoQueue;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Texture;
+import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.physics.box2d.Body;
 import com.badlogic.gdx.physics.box2d.BodyDef;
@@ -26,6 +27,7 @@ import com.badlogic.gdx.physics.box2d.World;
 import br.com.lucasmteixeira.playground.game.AnimatedMaterialObject;
 import br.com.lucasmteixeira.playground.game.CollisionType;
 import br.com.lucasmteixeira.playground.game.Physical;
+import br.com.lucasmteixeira.playground.game.animation.AnimationType;
 import br.com.lucasmteixeira.playground.game.characters.actions.Action;
 import br.com.lucasmteixeira.playground.game.characters.actions.ActionType;
 import br.com.lucasmteixeira.playground.game.characters.actions.ContinuousAction;
@@ -64,10 +66,12 @@ public abstract class Person extends AnimatedMaterialObject implements Physical 
 	private final Map<ActionType, ContinuousAction> continuousUnfinishedActions;
 	private final Set<Action> actionsToRun;
 
-	private Direction direction;
+	private Direction walkDirection;
+
+	private Direction facingDirection;
 
 	protected Person(Float x, Float y, Float w, Float h, Texture texture, World world) {
-		//TODO add a enumMap default for any person (could be random)
+		// TODO add a enumMap default for any person (could be random)
 		super(x, y, w, h, texture);
 
 		// First we create a body definition
@@ -109,7 +113,8 @@ public abstract class Person extends AnimatedMaterialObject implements Physical 
 		this.continuousUnfinishedActions = new HashMap<ActionType, ContinuousAction>();
 		this.actionsToRun = new HashSet<Action>();
 
-		this.direction = Direction.NONE;
+		this.walkDirection = Direction.NONE;
+		this.facingDirection = Direction.RIGHT;
 	}
 
 	@Override
@@ -215,6 +220,12 @@ public abstract class Person extends AnimatedMaterialObject implements Physical 
 		final float walkForce = this.body.getMass() * (deltaVelocity / (deltaTime.floatValue() / 1000f));
 
 		final float stopForce = this.body.getMass() * (personVelocity / (deltaTime.floatValue() / 1000f));
+
+		if (grounded) {
+			this.currentAnimation = AnimationType.IDLE;
+		} else {
+			//this.currentAnimation = AnimationType.FALLING;
+		}
 		for (final Action actionToRun : this.actionsToRun) {
 			this.actionsHistory.add(actionToRun);
 			switch (actionToRun.getType()) {
@@ -228,31 +239,39 @@ public abstract class Person extends AnimatedMaterialObject implements Physical 
 						jumpAction.execute();
 					}
 				} else {
-					this.body.setLinearVelocity(0f,  this.body.getLinearVelocity().y);
+					this.body.setLinearVelocity(0f, this.body.getLinearVelocity().y);
 				}
 				break;
 			case STOP_WALKING_LEFT:
-				if (Direction.LEFT.equals(this.direction) || Direction.NONE.equals(this.direction)) {
+				if (Direction.LEFT.equals(this.walkDirection) || Direction.NONE.equals(this.walkDirection)) {
 					this.body.applyForceToCenter(new Vector2(-stopForce, 0), true);
-					this.direction = Direction.NONE;
+					this.walkDirection = Direction.NONE;
 				}
 				break;
 			case STOP_WALKING_RIGHT:
-				if (Direction.RIGHT.equals(this.direction) || Direction.NONE.equals(this.direction)) {
+				if (Direction.RIGHT.equals(this.walkDirection) || Direction.NONE.equals(this.walkDirection)) {
 					this.body.applyForceToCenter(new Vector2(-stopForce, 0), true);
-					this.direction = Direction.NONE;
+					this.walkDirection = Direction.NONE;
 				}
 				break;
 			case WALKING_RIGHT:
-				if (Direction.RIGHT.equals(this.direction) || Direction.NONE.equals(this.direction)) {
+				if (Direction.RIGHT.equals(this.walkDirection) || Direction.NONE.equals(this.walkDirection)) {
 					this.body.applyForceToCenter(new Vector2(walkForce, 0), true);
-					this.direction = Direction.RIGHT;
+					this.walkDirection = Direction.RIGHT;
+					this.facingDirection = Direction.RIGHT;
+					if (grounded) {
+						this.currentAnimation = AnimationType.WALKING;
+					}
 				}
 				break;
 			case WALKING_LEFT:
-				if (Direction.LEFT.equals(this.direction) || Direction.NONE.equals(this.direction)) {
+				if (Direction.LEFT.equals(this.walkDirection) || Direction.NONE.equals(this.walkDirection)) {
 					this.body.applyForceToCenter(new Vector2(-walkForce, 0), true);
-					this.direction = Direction.LEFT;
+					this.walkDirection = Direction.LEFT;
+					this.facingDirection = Direction.LEFT;
+					if (grounded) {
+						this.currentAnimation = AnimationType.WALKING;
+					}
 				}
 				break;
 			default:
@@ -263,6 +282,13 @@ public abstract class Person extends AnimatedMaterialObject implements Physical 
 		this.actionsToRun.clear();
 	}
 
+	@Override
+	public TextureRegion getTexture() {
+		this.animationStateTime += Gdx.graphics.getDeltaTime();
+		return this.animations.get(this.currentAnimation).get(this.facingDirection).getKeyFrame(this.animationStateTime,
+				this.currentAnimation.isLoop());
+	}
+
 	public void jump() {
 		if (grounded) {
 			this.actionsPool.add(ActionType.JUMP);
@@ -270,10 +296,24 @@ public abstract class Person extends AnimatedMaterialObject implements Physical 
 	}
 
 	public void walk(Direction direction) {
+		if (Direction.RIGHT.equals(direction) && Direction.LEFT.equals(this.walkDirection)) {
+			//TODO issue stop action
+			return;
+		}
+		if (Direction.LEFT.equals(direction) && Direction.RIGHT.equals(this.walkDirection)) {
+			//TODO issue stop action
+			return;
+		}
 		this.actionsPool.add(direction.equals(Direction.LEFT) ? ActionType.WALKING_LEFT : ActionType.WALKING_RIGHT);
 	}
 
 	public void stop(Direction direction) {
+		if (this.actionsPool.contains(ActionType.WALKING_RIGHT) && direction.equals(Direction.LEFT)) {
+			return;
+		}
+		if (this.actionsPool.contains(ActionType.WALKING_LEFT) && direction.equals(Direction.RIGHT)) {
+			return;
+		}
 		this.actionsPool
 				.add(direction.equals(Direction.LEFT) ? ActionType.STOP_WALKING_LEFT : ActionType.STOP_WALKING_RIGHT);
 	}

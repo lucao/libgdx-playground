@@ -19,6 +19,12 @@ public class Walk extends ContinuousAction {
 
 	@Override
 	public List<ActionType> getInterruptableActions() {
-		return List.of(ActionType.IDLE, ActionType.STOP_WALKING_LEFT, ActionType.STOP_WALKING_RIGHT);
+		if (Direction.LEFT.equals(direction)) {
+			return List.of(ActionType.IDLE, ActionType.STOP_WALKING_LEFT);
+		} else if (Direction.RIGHT.equals(direction)) {
+			return List.of(ActionType.IDLE, ActionType.STOP_WALKING_RIGHT);
+		} else {
+			return List.of(ActionType.IDLE, ActionType.STOP_WALKING_LEFT, ActionType.STOP_WALKING_RIGHT);
+		}
 	}
 }

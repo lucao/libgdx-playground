@@ -13,7 +13,13 @@ public class Stop extends ContinuousAction {
 
 	@Override
 	public List<ActionType> getInterruptableActions() {
-		return List.of(ActionType.WALKING_LEFT, ActionType.WALKING_RIGHT);
+		if (Direction.LEFT.equals(direction)) {
+			return List.of(ActionType.WALKING_LEFT);
+		} else if (Direction.RIGHT.equals(direction)) {
+			return List.of(ActionType.WALKING_RIGHT);
+		} else {
+			return List.of(ActionType.WALKING_LEFT, ActionType.WALKING_RIGHT);
+		}
 	}
 	
 	@Override
