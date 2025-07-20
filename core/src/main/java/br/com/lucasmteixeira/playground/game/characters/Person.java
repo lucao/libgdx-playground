@@ -70,6 +70,7 @@ public abstract class Person extends AnimatedMaterialObject implements Physical 
 	private Direction walkingDirection;
 
 	protected Person(Float x, Float y, Float w, Float h, Texture texture, World world) {
+		//TODO add a enumMap default for any person (could be random)
 		super(x, y, w, h, texture, new EnumMap<ActionType, Animation<TextureRegion>>(ActionType.class));
 
 		// First we create a body definition
