@@ -16,6 +16,8 @@ public class Player extends Person {
 		super(x, y, w, h, texture, world);
 		// TODO Auto-generated constructor stub
 		// For click/touch events
+		
+		//this.animations
 	}
 
 	@Override

@@ -1,5 +1,6 @@
 package br.com.lucasmteixeira.playground.game.characters.actions;
 
+import java.time.Duration;
 import java.time.Instant;
 import java.util.Optional;
 
@@ -15,8 +16,13 @@ public abstract class ContinuousAction extends Action {
 			this.end = Optional.empty();
 		}
 		this.endActionType = Optional.empty();
-	}
 
+	}
+	
+	@Override
+	public Optional<Instant> getDelay() {
+		return Optional.empty();
+	}
 	@Override
 	public Optional<Instant> getEnd() {
 		return this.end;

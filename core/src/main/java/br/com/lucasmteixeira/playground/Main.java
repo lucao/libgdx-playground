@@ -35,7 +35,7 @@ public class Main extends ApplicationAdapter {
 	private Camera camera;
 	private MaterialObject followedObject;
 
-	private final static float lerp = 0.1f;
+	public final static float LERP = 0.1f;
 
 	private Viewport viewport;
 	private SpriteBatch batch;

@@ -21,21 +21,20 @@ public class InputProcessorPC implements InputProcessor {
 
 	@Override
 	public boolean keyDown(int keycode) {
-		if (keycode == Input.Keys.SPACE) {
-			Gdx.app.debug("DEBUG", "Dispatching jump action");
-			player.jump();
-		}
+		
 		return true;
 	}
 
 	@Override
 	public boolean keyUp(int keycode) {
 		if (keycode == Input.Keys.D) {
-			Gdx.app.debug("DEBUG", "Dispatching stop walk right action");
 			player.stop(Direction.RIGHT);
 		} else if (keycode == Input.Keys.A) {
-			Gdx.app.debug("DEBUG", "Dispatching stop walk left action");
 			player.stop(Direction.LEFT);
+		}
+		
+		if (keycode == Input.Keys.SPACE) {
+			player.jump();
 		}
 		return true;
 	}
