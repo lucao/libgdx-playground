@@ -224,8 +224,7 @@ public abstract class Person extends AnimatedMaterialObject implements Physical 
 		if (grounded) {
 			this.currentAnimation = AnimationType.IDLE;
 		} else {
-			this.currentAnimation = AnimationType.IDLE;
-			// this.currentAnimation = AnimationType.FALLING;
+			this.currentAnimation = AnimationType.FALLING;
 		}
 		for (final Action actionToRun : this.actionsToRun) {
 			this.actionsHistory.add(actionToRun);

@@ -17,7 +17,7 @@ public class NarutoPlayer extends Player {
 		super(x, y, w, h,
 				MaterialObject.loadTextureWithTransparency("Naruto.jpg", new Color(0.592f, 0.682f, 0.843f, 1), 0.07f),
 				world);
-		
+
 		TextureRegion[] idleFramesRight = new TextureRegion[] { new TextureRegion(this.texture, 30, 5, 36, 55),
 				new TextureRegion(this.texture, 80, 5, 36, 55), new TextureRegion(this.texture, 130, 5, 36, 55),
 				new TextureRegion(this.texture, 178, 5, 36, 55), new TextureRegion(this.texture, 225, 5, 36, 55),
@@ -57,6 +57,38 @@ public class NarutoPlayer extends Player {
 				new Animation<TextureRegion>(AnimationType.WALKING.getFrameInterval(), walkingFramesRight));
 		this.animations.get(AnimationType.WALKING).put(Direction.LEFT,
 				new Animation<TextureRegion>(AnimationType.WALKING.getFrameInterval(), walkingFramesLeft));
+
+		TextureRegion[] fallingFramesRight = new TextureRegion[] { new TextureRegion(this.texture, 139, 330, 31, 54),
+				new TextureRegion(this.texture, 177, 330, 31, 54) };
+
+		TextureRegion[] fallingFramesLeft = new TextureRegion[] { new TextureRegion(this.texture, 139, 330, 31, 54),
+				new TextureRegion(this.texture, 177, 330, 31, 54) };
+		for (int i = 0; i < fallingFramesLeft.length; i++)
+			fallingFramesLeft[i].flip(true, false);
+
+		this.animations.put(AnimationType.FALLING, new EnumMap<Direction, Animation<TextureRegion>>(Direction.class));
+		this.animations.get(AnimationType.FALLING).put(Direction.RIGHT,
+				new Animation<TextureRegion>(AnimationType.FALLING.getFrameInterval(), fallingFramesRight));
+		this.animations.get(AnimationType.FALLING).put(Direction.NONE,
+				new Animation<TextureRegion>(AnimationType.FALLING.getFrameInterval(), fallingFramesRight));
+		this.animations.get(AnimationType.FALLING).put(Direction.LEFT,
+				new Animation<TextureRegion>(AnimationType.FALLING.getFrameInterval(), fallingFramesLeft));
+		//TODO
+		TextureRegion[] jumpingFramesRight = new TextureRegion[] { new TextureRegion(this.texture, 139, 330, 31, 54),
+				new TextureRegion(this.texture, 177, 330, 31, 54) };
+
+		TextureRegion[] jumpingFramesLeft = new TextureRegion[] { new TextureRegion(this.texture, 139, 330, 31, 54),
+				new TextureRegion(this.texture, 177, 330, 31, 54) };
+		for (int i = 0; i < jumpingFramesLeft.length; i++)
+			jumpingFramesLeft[i].flip(true, false);
+
+		this.animations.put(AnimationType.JUMPING, new EnumMap<Direction, Animation<TextureRegion>>(Direction.class));
+		this.animations.get(AnimationType.JUMPING).put(Direction.RIGHT,
+				new Animation<TextureRegion>(AnimationType.JUMPING.getFrameInterval(), jumpingFramesRight));
+		this.animations.get(AnimationType.JUMPING).put(Direction.NONE,
+				new Animation<TextureRegion>(AnimationType.JUMPING.getFrameInterval(), jumpingFramesRight));
+		this.animations.get(AnimationType.JUMPING).put(Direction.LEFT,
+				new Animation<TextureRegion>(AnimationType.JUMPING.getFrameInterval(), jumpingFramesLeft));
 
 	}
 }

@@ -6,7 +6,7 @@ import br.com.lucasmteixeira.playground.game.characters.actions.Direction;
 
 public enum AnimationType {
 
-	IDLE(), WALKING(), RUNNING(), JUMPING(PlayMode.NORMAL), FALLING(), ATTACKING(PlayMode.NORMAL),
+	IDLE(), WALKING(), RUNNING(), JUMPING(PlayMode.NORMAL), FALLING(0.1f), ATTACKING(PlayMode.NORMAL),
 	DYING(PlayMode.NORMAL), DEAD();
 
 	private final Direction direction;
@@ -44,6 +44,13 @@ public enum AnimationType {
 		this.delay = 0;
 	}
 
+	private AnimationType(float frameInterval) {
+		this.loop = PlayMode.LOOP;
+		this.direction = Direction.RIGHT;
+		this.frameInterval = frameInterval;
+		this.delay = 0f;
+	}
+	
 	private AnimationType(float frameInterval, float delay) {
 		this.loop = PlayMode.LOOP;
 		this.direction = Direction.RIGHT;

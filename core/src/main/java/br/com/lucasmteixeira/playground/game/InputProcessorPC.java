@@ -4,17 +4,20 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.InputProcessor;
 import com.badlogic.gdx.graphics.Camera;
+import com.badlogic.gdx.graphics.OrthographicCamera;
+import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Vector3;
 
+import br.com.lucasmteixeira.playground.Main;
 import br.com.lucasmteixeira.playground.game.characters.actions.Direction;
 import br.com.lucasmteixeira.playground.game.characters.player.Player;
 
 public class InputProcessorPC implements InputProcessor {
 
 	private final Player player;
-	private final Camera camera;
+	private final OrthographicCamera camera;
 
-	public InputProcessorPC(Player player, Camera camera) {
+	public InputProcessorPC(Player player, OrthographicCamera camera) {
 		this.player = player;
 		this.camera = camera;
 	}
@@ -79,8 +82,9 @@ public class InputProcessorPC implements InputProcessor {
 
 	@Override
 	public boolean scrolled(float amountX, float amountY) {
-		// TODO Auto-generated method stub
-		return false;
+		camera.zoom += amountY*Main.LERP;
+		
+		return true;
 	}
 
 }

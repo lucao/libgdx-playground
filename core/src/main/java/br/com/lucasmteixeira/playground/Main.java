@@ -34,7 +34,7 @@ import br.com.lucasmteixeira.playground.game.scenery.Ground;
  * platforms.
  */
 public class Main extends ApplicationAdapter {
-	private Camera camera;
+	private OrthographicCamera camera;
 	private GameObject followedObject;
 
 	public final static float LERP = 0.1f;
@@ -96,6 +96,8 @@ public class Main extends ApplicationAdapter {
 	@Override
 	public void resize(int width, int height) {
 		viewport.update(width, height);
+
+		camera.update();
 	}
 
 	@Override
@@ -107,15 +109,25 @@ public class Main extends ApplicationAdapter {
 				now.toEpochMilli() - Main.frameTimes.peek());
 		Main.frameTimes.offer(now.toEpochMilli());
 
+		if (followedObject instanceof MaterialObject) {
+			MaterialObject materialFollowedObject = (MaterialObject) followedObject;
+			camera.position.x += ((materialFollowedObject.getX() + materialFollowedObject.getW() / 2)
+					- camera.position.x) * LERP;
+			camera.position.y += ((materialFollowedObject.getY() + materialFollowedObject.getH() / 2)
+					- camera.position.y) * LERP;
+		} else {
+			camera.position.x += (followedObject.getX() - camera.position.x) * LERP;
+			camera.position.y += (followedObject.getY() - camera.position.y) * LERP;
+		}
+
+		camera.update();
 		viewport.apply();
 		// camera.position.x = ((followedObject.x + followedObject.w / 2) -
 		// camera.position.x) * lerp;
 		// camera.position.y = ((followedObject.y + followedObject.h / 2) -
 		// camera.position.y) * lerp;
-		camera.update();
 
-		batch.setProjectionMatrix(camera.projection);
-		batch.setTransformMatrix(camera.view);
+		batch.setProjectionMatrix(camera.combined);
 		batch.begin();
 		// draw all aventura's pertinent objects
 		for (MaterialObject materialObject : drawableObjects) {
