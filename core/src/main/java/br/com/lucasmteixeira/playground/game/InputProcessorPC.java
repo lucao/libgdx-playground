@@ -1,11 +1,8 @@
 package br.com.lucasmteixeira.playground.game;
 
-import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.InputProcessor;
-import com.badlogic.gdx.graphics.Camera;
 import com.badlogic.gdx.graphics.OrthographicCamera;
-import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Vector3;
 
 import br.com.lucasmteixeira.playground.Main;
@@ -24,7 +21,7 @@ public class InputProcessorPC implements InputProcessor {
 
 	@Override
 	public boolean keyDown(int keycode) {
-		
+
 		return true;
 	}
 
@@ -35,7 +32,7 @@ public class InputProcessorPC implements InputProcessor {
 		} else if (keycode == Input.Keys.A) {
 			player.stop(Direction.LEFT);
 		}
-		
+
 		if (keycode == Input.Keys.SPACE) {
 			player.jump();
 		}
@@ -82,8 +79,15 @@ public class InputProcessorPC implements InputProcessor {
 
 	@Override
 	public boolean scrolled(float amountX, float amountY) {
-		camera.zoom += amountY*Main.LERP;
-		
+		float zoomValue = camera.zoom + amountY * Main.ZOOM_LERP;
+		if (zoomValue < 0.5f) {
+			camera.zoom = 0.5f;
+		} else if (zoomValue > 10f) {
+			camera.zoom = 10f;
+		} else {
+			camera.zoom = zoomValue;
+		}
+
 		return true;
 	}
 

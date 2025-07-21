@@ -10,11 +10,13 @@ import com.badlogic.gdx.ApplicationAdapter;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Camera;
 import com.badlogic.gdx.graphics.Color;
+import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.Pixmap;
 import com.badlogic.gdx.graphics.Pixmap.Format;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
+import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.physics.box2d.Box2DDebugRenderer;
 import com.badlogic.gdx.utils.ScreenUtils;
 import com.badlogic.gdx.utils.viewport.ExtendViewport;
@@ -37,7 +39,8 @@ public class Main extends ApplicationAdapter {
 	private OrthographicCamera camera;
 	private GameObject followedObject;
 
-	public final static float LERP = 0.1f;
+	public final static float FOLLOW_LERP = 0.1f;
+	public final static float ZOOM_LERP = 0.4f;
 
 	private Viewport viewport;
 	private SpriteBatch batch;
@@ -60,6 +63,9 @@ public class Main extends ApplicationAdapter {
 	@Override
 	public void create() {
 		Gdx.app.setLogLevel(Application.LOG_DEBUG);
+		
+		Gdx.gl.glBlendFuncSeparate(GL20.GL_SRC_ALPHA, GL20.GL_ONE_MINUS_SRC_ALPHA, GL20.GL_ONE, GL20.GL_ONE_MINUS_SRC_ALPHA);
+		Gdx.graphics.getGL20().glEnable(GL20.GL_BLEND);
 
 		// debugRenderer = new Box2DDebugRenderer();
 
@@ -112,12 +118,12 @@ public class Main extends ApplicationAdapter {
 		if (followedObject instanceof MaterialObject) {
 			MaterialObject materialFollowedObject = (MaterialObject) followedObject;
 			camera.position.x += ((materialFollowedObject.getX() + materialFollowedObject.getW() / 2)
-					- camera.position.x) * LERP;
+					- camera.position.x) * FOLLOW_LERP;
 			camera.position.y += ((materialFollowedObject.getY() + materialFollowedObject.getH() / 2)
-					- camera.position.y) * LERP;
+					- camera.position.y) * FOLLOW_LERP;
 		} else {
-			camera.position.x += (followedObject.getX() - camera.position.x) * LERP;
-			camera.position.y += (followedObject.getY() - camera.position.y) * LERP;
+			camera.position.x += (followedObject.getX() - camera.position.x) * FOLLOW_LERP;
+			camera.position.y += (followedObject.getY() - camera.position.y) * FOLLOW_LERP;
 		}
 
 		camera.update();
@@ -131,11 +137,12 @@ public class Main extends ApplicationAdapter {
 		batch.begin();
 		// draw all aventura's pertinent objects
 		for (MaterialObject materialObject : drawableObjects) {
-//			Gdx.app.log(materialObject.getClass().getName(),
-//					"X/Y/W/H: " + materialObject.getX().toString() + "/" + materialObject.getY().toString() + "/"
-//							+ materialObject.getW().toString() + "/" + materialObject.getH().toString());
 			batch.draw(materialObject.getTexture(), materialObject.getX(), materialObject.getY(), materialObject.getW(),
 					materialObject.getH());
+			for (MaterialObject childMaterialObject : materialObject.getChildMaterialObjects()) {
+				batch.draw(childMaterialObject.getTexture(), childMaterialObject.getX(), childMaterialObject.getY(),
+						childMaterialObject.getW(), childMaterialObject.getH());
+			}
 		}
 
 		batch.end();

@@ -1,6 +1,7 @@
 package br.com.lucasmteixeira.playground.game.scenery;
 
 import java.time.Instant;
+import java.util.List;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Texture;
@@ -22,6 +23,8 @@ public class Ground extends MaterialObject implements Physical {
 
 	protected Fixture fixture;
 
+	protected final Background background;
+
 	public Ground(Float x, Float y, Float w, Float h, Texture texture, World world) {
 		super(x, y, w, h, texture);
 
@@ -41,8 +44,11 @@ public class Ground extends MaterialObject implements Physical {
 		groundBox.dispose();
 
 		this.body.setUserData(this);
+
+		// TODO darken texture a little bit
+		this.background = new Background(x, y + 5, w, h, new Texture(texture.getTextureData()));
 	}
-	
+
 	@Override
 	public CollisionType getCollisionType() {
 		return CollisionType.GROUND;
@@ -90,4 +96,10 @@ public class Ground extends MaterialObject implements Physical {
 	public Float getY() {
 		return this.y = this.body.getPosition().y - (h / 2);
 	}
+
+	@Override
+	public List<MaterialObject> getChildMaterialObjects() {
+		return List.of(this.background);
+	}
+
 }
