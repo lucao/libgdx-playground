@@ -11,7 +11,6 @@ import br.com.lucasmteixeira.playground.game.animation.AnimationType;
 import br.com.lucasmteixeira.playground.game.characters.actions.Direction;
 
 public abstract class AnimatedMaterialObject extends MaterialObject {
-	public static final float FRAME_INTERVAL = 0.1f;
 	protected final EnumMap<AnimationType, EnumMap<Direction, Animation<TextureRegion>>> animations;
 
 	protected AnimationType currentAnimation;

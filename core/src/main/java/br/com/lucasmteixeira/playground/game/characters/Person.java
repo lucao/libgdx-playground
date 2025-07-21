@@ -59,7 +59,7 @@ public abstract class Person extends AnimatedMaterialObject implements Physical 
 	private static final Integer NORMAL_JUMP_FORCE = 5000;
 	private static final Float NORMAL_WALK_SPEED = 50f;// TODO walk
 
-	private final List<ActionType> actionsPool;
+	private final Set<ActionType> actionsPool;
 	private final CircularFifoQueue<Action> actionsHistory;
 
 	private final Set<Action> runningActions;
@@ -106,7 +106,7 @@ public abstract class Person extends AnimatedMaterialObject implements Physical 
 
 		this.grounded = false;
 
-		this.actionsPool = new ArrayList<ActionType>();
+		this.actionsPool = new HashSet<ActionType>();
 		this.actionsHistory = new CircularFifoQueue<Action>(50);
 
 		this.runningActions = new HashSet<Action>();
@@ -224,7 +224,8 @@ public abstract class Person extends AnimatedMaterialObject implements Physical 
 		if (grounded) {
 			this.currentAnimation = AnimationType.IDLE;
 		} else {
-			//this.currentAnimation = AnimationType.FALLING;
+			this.currentAnimation = AnimationType.IDLE;
+			// this.currentAnimation = AnimationType.FALLING;
 		}
 		for (final Action actionToRun : this.actionsToRun) {
 			this.actionsHistory.add(actionToRun);
@@ -297,11 +298,11 @@ public abstract class Person extends AnimatedMaterialObject implements Physical 
 
 	public void walk(Direction direction) {
 		if (Direction.RIGHT.equals(direction) && Direction.LEFT.equals(this.walkDirection)) {
-			//TODO issue stop action
+			this.actionsPool.add(ActionType.STOP_WALKING_LEFT);
 			return;
 		}
 		if (Direction.LEFT.equals(direction) && Direction.RIGHT.equals(this.walkDirection)) {
-			//TODO issue stop action
+			this.actionsPool.add(ActionType.STOP_WALKING_RIGHT);
 			return;
 		}
 		this.actionsPool.add(direction.equals(Direction.LEFT) ? ActionType.WALKING_LEFT : ActionType.WALKING_RIGHT);
@@ -312,6 +313,10 @@ public abstract class Person extends AnimatedMaterialObject implements Physical 
 			return;
 		}
 		if (this.actionsPool.contains(ActionType.WALKING_LEFT) && direction.equals(Direction.RIGHT)) {
+			return;
+		}
+		if (this.actionsPool.contains(ActionType.STOP_WALKING_LEFT)
+				|| this.actionsPool.contains(ActionType.STOP_WALKING_RIGHT)) {
 			return;
 		}
 		this.actionsPool
