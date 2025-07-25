@@ -23,7 +23,7 @@ public class Aventura {
 
 	protected Aventura() {
 		this.mapGameObjects = new HashMap<KeyQuadrante, ArrayList<GameObject>>();
-		this.world = new World(new Vector2(0, -200), true);
+		this.world = new World(new Vector2(0, -160), true);
 
 		this.world.setContactListener(new WorldContactListener());
 	}

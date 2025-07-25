@@ -1,11 +1,9 @@
 package br.com.lucasmteixeira.playground.game.characters;
 
 import java.time.Instant;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -57,7 +55,7 @@ public abstract class Person extends AnimatedMaterialObject implements Physical 
 
 	protected boolean grounded;
 
-	private static final Integer NORMAL_JUMP_FORCE = 10000;
+	private static final Integer NORMAL_JUMP_FORCE = 15000;
 	private static final Float NORMAL_WALK_SPEED = 50f;// TODO walk
 
 	private final Set<ActionType> actionsPool;
@@ -217,8 +215,8 @@ public abstract class Person extends AnimatedMaterialObject implements Physical 
 		}
 
 		final float personVelocity = this.body.getLinearVelocity().x;
-		final float deltaVelocity = NORMAL_WALK_SPEED - Math.abs(personVelocity);
-		final float walkForce = this.body.getMass() * (deltaVelocity / (deltaTime.floatValue() / 1000f));
+		float deltaVelocity;
+		float walkForce;
 
 		final float stopForce = this.body.getMass() * (personVelocity / (deltaTime.floatValue() / 1000f));
 
@@ -257,6 +255,8 @@ public abstract class Person extends AnimatedMaterialObject implements Physical 
 				break;
 			case WALKING_RIGHT:
 				if (Direction.RIGHT.equals(this.walkDirection) || Direction.NONE.equals(this.walkDirection)) {
+					deltaVelocity = NORMAL_WALK_SPEED - Math.abs(personVelocity);
+					walkForce = this.body.getMass() * (deltaVelocity / (deltaTime.floatValue() / 1000f));
 					this.body.applyForceToCenter(new Vector2(walkForce, 0), true);
 					this.walkDirection = Direction.RIGHT;
 					this.facingDirection = Direction.RIGHT;
@@ -267,6 +267,32 @@ public abstract class Person extends AnimatedMaterialObject implements Physical 
 				break;
 			case WALKING_LEFT:
 				if (Direction.LEFT.equals(this.walkDirection) || Direction.NONE.equals(this.walkDirection)) {
+					deltaVelocity = NORMAL_WALK_SPEED - Math.abs(personVelocity);
+					walkForce = this.body.getMass() * (deltaVelocity / (deltaTime.floatValue() / 1000f));
+					this.body.applyForceToCenter(new Vector2(-walkForce, 0), true);
+					this.walkDirection = Direction.LEFT;
+					this.facingDirection = Direction.LEFT;
+					if (grounded) {
+						this.currentAnimation = AnimationType.WALKING;
+					}
+				}
+				break;
+			case RUNNING_RIGHT:
+				if (Direction.LEFT.equals(this.walkDirection) || Direction.NONE.equals(this.walkDirection)) {
+					deltaVelocity = (3 * NORMAL_WALK_SPEED) - Math.abs(personVelocity);
+					walkForce = this.body.getMass() * (deltaVelocity / (deltaTime.floatValue() / 1000f));
+					this.body.applyForceToCenter(new Vector2(-walkForce, 0), true);
+					this.walkDirection = Direction.LEFT;
+					this.facingDirection = Direction.LEFT;
+					if (grounded) {
+						this.currentAnimation = AnimationType.WALKING;
+					}
+				}
+				break;
+			case RUNNING_LEFT:
+				if (Direction.LEFT.equals(this.walkDirection) || Direction.NONE.equals(this.walkDirection)) {
+					deltaVelocity = (3 * NORMAL_WALK_SPEED) - Math.abs(personVelocity);
+					walkForce = this.body.getMass() * (deltaVelocity / (deltaTime.floatValue() / 1000f));
 					this.body.applyForceToCenter(new Vector2(-walkForce, 0), true);
 					this.walkDirection = Direction.LEFT;
 					this.facingDirection = Direction.LEFT;
@@ -281,8 +307,8 @@ public abstract class Person extends AnimatedMaterialObject implements Physical 
 		}
 
 		this.actionsToRun.clear();
-		
-		//update positioning
+
+		// update positioning
 		this.x = this.body.getPosition().x - (w / 2);
 		this.y = this.body.getPosition().y - (h / 2);
 	}
@@ -290,9 +316,9 @@ public abstract class Person extends AnimatedMaterialObject implements Physical 
 	@Override
 	public void draw(SpriteBatch batch) {
 		this.animationStateTime += Gdx.graphics.getDeltaTime();
-		Sprite spriteToDraw = this.animations.get(this.currentAnimation).get(this.facingDirection).getKeyFrame(this.animationStateTime,
-				this.currentAnimation.isLoop());
-		
+		Sprite spriteToDraw = this.animations.get(this.currentAnimation).get(this.facingDirection)
+				.getKeyFrame(this.animationStateTime, this.currentAnimation.isLoop());
+
 		spriteToDraw.setBounds(x, y, w, h);
 		spriteToDraw.draw(batch);
 	}

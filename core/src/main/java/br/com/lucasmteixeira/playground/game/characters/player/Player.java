@@ -16,16 +16,24 @@ public class Player extends Person {
 		super(x, y, w, h, texture, world);
 		// TODO Auto-generated constructor stub
 		// For click/touch events
-		
-		//this.animations
+
+		// this.animations
 	}
 
 	@Override
 	public void play(Instant now, Long deltaTime) {
 		if (Gdx.input.isKeyPressed(Input.Keys.D)) {
-			this.walk(Direction.RIGHT);
+			if (Gdx.input.isKeyPressed(Input.Keys.SHIFT_LEFT) || Gdx.input.isKeyPressed(Input.Keys.SHIFT_RIGHT)) {
+				this.run(Direction.RIGHT);
+			} else {
+				this.walk(Direction.RIGHT);
+			}
 		} else if (Gdx.input.isKeyPressed(Input.Keys.A)) {
-			this.walk(Direction.LEFT);
+			if (Gdx.input.isKeyPressed(Input.Keys.SHIFT_LEFT) || Gdx.input.isKeyPressed(Input.Keys.SHIFT_RIGHT)) {
+				this.run(Direction.LEFT);
+			} else {
+				this.walk(Direction.LEFT);
+			}
 		}
 		super.play(now, deltaTime);
 
