@@ -2,6 +2,7 @@ package br.com.lucasmteixeira.playground.game.aventuras;
 
 import java.time.Instant;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -17,12 +18,12 @@ import br.com.lucasmteixeira.playground.game.MaterialObject;
 import br.com.lucasmteixeira.playground.game.WorldContactListener;
 
 public class Aventura {
-	protected final Map<long[], ArrayList<GameObject>> mapGameObjects;
+	protected final Map<KeyQuadrante, ArrayList<GameObject>> mapGameObjects;
 	protected final World world;
 
 	protected Aventura() {
-		this.mapGameObjects = new HashMap<long[], ArrayList<GameObject>>();
-		this.world = new World(new Vector2(0, -100), true);
+		this.mapGameObjects = new HashMap<KeyQuadrante, ArrayList<GameObject>>();
+		this.world = new World(new Vector2(0, -200), true);
 
 		this.world.setContactListener(new WorldContactListener());
 	}
@@ -31,8 +32,32 @@ public class Aventura {
 		return this.world;
 	}
 
+	private class KeyQuadrante {
+		private final long[] key;
+
+		public KeyQuadrante(long[] key) {
+			this.key = key;
+		}
+
+		@Override
+		public boolean equals(Object obj) {
+			if (this == obj)
+				return true;
+			if (obj == null)
+				return false;
+			if (getClass() != obj.getClass())
+				return false;
+			return Arrays.equals(key, ((KeyQuadrante) obj).key);
+		}
+
+		@Override
+		public int hashCode() {
+			return Arrays.hashCode(key);
+		}
+	}
+
 	public void addGameObject(GameObject gameObject) {
-		long[] key = gameObject.getQuadrante();
+		KeyQuadrante key = new KeyQuadrante(gameObject.getQuadrante());
 		if (!this.mapGameObjects.containsKey(key)) {
 			this.mapGameObjects.put(key, new ArrayList<GameObject>());
 		}
@@ -74,32 +99,25 @@ public class Aventura {
 
 		final long[] middle = { Math.round(camera.position.x / Main.CONSTANTE_DO_QUADRANTE),
 				Math.round(camera.position.y / Main.CONSTANTE_DO_QUADRANTE) };
-
 		final List<MaterialObject> drawableGameObjects = new ArrayList<MaterialObject>();
 
 		// order of quadrantes
-		/*
-		 * for (final long[] key : new long[][] { middle, { middle[0], middle[1]++ }, {
-		 * middle[0]++, middle[1] }, { middle[0], middle[1]-- }, { middle[0],
-		 * middle[1]-- }, { middle[0]--, middle[1] }, { middle[0]--, middle[1] }, {
-		 * middle[0], middle[1]++ }, { middle[0], middle[1]++ } }) { if
-		 * (this.mapGameObjects.containsKey(key)) { for (GameObject gameObject :
-		 * this.mapGameObjects.get(key)) { if (gameObject instanceof MaterialObject) {
-		 * drawableGameObjects.add((MaterialObject) gameObject); } } } }
-		 */
-		// TODO ver se é melhor usar coroutines para parar atualização de elementos
-		// quando demorar muito tempo
-		for (ArrayList<GameObject> gameObjects : this.mapGameObjects.values()) {
-			for (GameObject gameObject : gameObjects) {
-				// check if object is in range for logic process
-				gameObject.play(now, deltaTime);
 
-				if (gameObject instanceof MaterialObject) {
-					// check if object is in range for drawing
-					drawableGameObjects.add((MaterialObject) gameObject);
+		for (final long[] key : new long[][] { middle, { middle[0], middle[1]++ }, { middle[0]++, middle[1] },
+				{ middle[0], middle[1]-- }, { middle[0], middle[1]-- }, { middle[0]--, middle[1] },
+				{ middle[0]--, middle[1] }, { middle[0], middle[1]++ }, { middle[0], middle[1]++ } }) {
+			KeyQuadrante keyObject = new KeyQuadrante(key);
+			if (this.mapGameObjects.containsKey(keyObject)) {
+
+				for (GameObject gameObject : this.mapGameObjects.get(keyObject)) {
+					gameObject.play(now, deltaTime);
+					if (gameObject instanceof MaterialObject) {
+						drawableGameObjects.add((MaterialObject) gameObject);
+					}
 				}
 			}
 		}
+
 		Collections.sort(drawableGameObjects);
 		return drawableGameObjects;
 	}

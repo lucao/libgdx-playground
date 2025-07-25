@@ -3,7 +3,6 @@ package br.com.lucasmteixeira.playground.game;
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.InputProcessor;
 import com.badlogic.gdx.graphics.OrthographicCamera;
-import com.badlogic.gdx.math.Vector3;
 
 import br.com.lucasmteixeira.playground.Main;
 import br.com.lucasmteixeira.playground.game.characters.actions.Direction;
@@ -71,9 +70,9 @@ public class InputProcessorPC implements InputProcessor {
 
 	@Override
 	public boolean mouseMoved(int screenX, int screenY) {
-		Vector3 mouseVector = camera.unproject(new Vector3(screenX, screenY, 1));
-		player.x = mouseVector.x;
-		player.y = mouseVector.y;
+//		Vector3 mouseVector = camera.unproject(new Vector3(screenX, screenY, 1));
+//		player.x = mouseVector.x;
+//		player.y = mouseVector.y;
 		return true;
 	}
 

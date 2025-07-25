@@ -57,7 +57,7 @@ public abstract class Person extends AnimatedMaterialObject implements Physical 
 
 	protected boolean grounded;
 
-	private static final Integer NORMAL_JUMP_FORCE = 5000;
+	private static final Integer NORMAL_JUMP_FORCE = 10000;
 	private static final Float NORMAL_WALK_SPEED = 50f;// TODO walk
 
 	private final Set<ActionType> actionsPool;

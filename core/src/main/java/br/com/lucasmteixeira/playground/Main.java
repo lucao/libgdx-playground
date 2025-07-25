@@ -18,6 +18,8 @@ import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.physics.box2d.Box2DDebugRenderer;
+import com.badlogic.gdx.scenes.scene2d.Stage;
+import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 import com.badlogic.gdx.utils.ScreenUtils;
 import com.badlogic.gdx.utils.viewport.ExtendViewport;
 import com.badlogic.gdx.utils.viewport.Viewport;
@@ -53,12 +55,14 @@ public class Main extends ApplicationAdapter {
 
 	private Aventura aventura;
 
-	// TODO set configuration
 	public static float frameRate = 1f / 60f;
+	private static final CircularFifoQueue<Long> frameTimes = new CircularFifoQueue<Long>(4);
 
 	// Box2DDebugRenderer debugRenderer;
-
-	private static final CircularFifoQueue<Long> frameTimes = new CircularFifoQueue<Long>(4);
+	// DEBUG
+//	private com.badlogic.gdx.scenes.scene2d.ui.List<String> debug_GameObjectsList;
+//
+//	private Stage debugStage;
 
 	@Override
 	public void create() {
@@ -98,12 +102,23 @@ public class Main extends ApplicationAdapter {
 
 		Main.frameTimes.add(Instant.now().getEpochSecond());
 		Gdx.input.setInputProcessor(new InputProcessorPC(player, camera));
+
+		// DEBUG
+//		debugStage = new Stage();
+//		long[] debugCameraQuadrante = { Math.round(camera.position.x / Main.CONSTANTE_DO_QUADRANTE),
+//				Math.round(camera.position.y / Main.CONSTANTE_DO_QUADRANTE) };
+//		debug_GameObjectsList = new com.badlogic.gdx.scenes.scene2d.ui.List<String>(
+//				new Skin(Gdx.files.internal("ui/uiskin.json")));
+//		debug_GameObjectsList.setItems(String.valueOf(player.getQuadrante()).concat(" player quadrante"),
+//				String.valueOf(ground.getQuadrante()).concat(" ground quadrante"),
+//				String.valueOf(debugCameraQuadrante).concat(" camera quadrante"));
+//		debug_GameObjectsList.setDebug(true);
+//		debugStage.addActor(debug_GameObjectsList);
 	}
 
 	@Override
 	public void resize(int width, int height) {
 		viewport.update(width, height);
-
 		camera.update();
 	}
 
@@ -129,10 +144,6 @@ public class Main extends ApplicationAdapter {
 
 		camera.update();
 		viewport.apply();
-		// camera.position.x = ((followedObject.x + followedObject.w / 2) -
-		// camera.position.x) * lerp;
-		// camera.position.y = ((followedObject.y + followedObject.h / 2) -
-		// camera.position.y) * lerp;
 
 		batch.setProjectionMatrix(camera.combined);
 		batch.begin();
@@ -146,7 +157,9 @@ public class Main extends ApplicationAdapter {
 
 		batch.end();
 
-		// debugRenderer.render(aventura.getWorld(), camera.combined);
+		// DEBUG
+//		debugStage.act(Gdx.graphics.getDeltaTime());
+//		debugStage.draw();
 	}
 
 	@Override
