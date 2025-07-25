@@ -13,7 +13,8 @@ import org.apache.commons.collections4.queue.CircularFifoQueue;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Texture;
-import com.badlogic.gdx.graphics.g2d.TextureRegion;
+import com.badlogic.gdx.graphics.g2d.Sprite;
+import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.physics.box2d.Body;
 import com.badlogic.gdx.physics.box2d.BodyDef;
@@ -280,13 +281,20 @@ public abstract class Person extends AnimatedMaterialObject implements Physical 
 		}
 
 		this.actionsToRun.clear();
+		
+		//update positioning
+		this.x = this.body.getPosition().x - (w / 2);
+		this.y = this.body.getPosition().y - (h / 2);
 	}
 
 	@Override
-	public TextureRegion getTexture() {
+	public void draw(SpriteBatch batch) {
 		this.animationStateTime += Gdx.graphics.getDeltaTime();
-		return this.animations.get(this.currentAnimation).get(this.facingDirection).getKeyFrame(this.animationStateTime,
+		Sprite spriteToDraw = this.animations.get(this.currentAnimation).get(this.facingDirection).getKeyFrame(this.animationStateTime,
 				this.currentAnimation.isLoop());
+		
+		spriteToDraw.setBounds(x, y, w, h);
+		spriteToDraw.draw(batch);
 	}
 
 	public void jump() {
@@ -322,22 +330,12 @@ public abstract class Person extends AnimatedMaterialObject implements Physical 
 				.add(direction.equals(Direction.LEFT) ? ActionType.STOP_WALKING_LEFT : ActionType.STOP_WALKING_RIGHT);
 	}
 
-	// TODO lembra que o X e Y do box2D são no centro
+	// X e Y do box2D são no centro
 	public void setX(Float x) {
 		this.body.getPosition().x = (x + w) - w / 2;
 	}
 
 	public void setY(Float y) {
 		this.body.getPosition().y = (y + h) - h / 2;
-	}
-
-	@Override
-	public Float getX() {
-		return this.x = this.body.getPosition().x - (w / 2);
-	}
-
-	@Override
-	public Float getY() {
-		return this.y = this.body.getPosition().y - (h / 2);
 	}
 }

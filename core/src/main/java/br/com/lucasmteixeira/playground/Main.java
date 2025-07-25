@@ -63,8 +63,8 @@ public class Main extends ApplicationAdapter {
 	@Override
 	public void create() {
 		Gdx.app.setLogLevel(Application.LOG_DEBUG);
-		
-		Gdx.gl.glBlendFuncSeparate(GL20.GL_SRC_ALPHA, GL20.GL_ONE_MINUS_SRC_ALPHA, GL20.GL_ONE, GL20.GL_ONE_MINUS_SRC_ALPHA);
+
+		Gdx.gl.glBlendFunc(GL20.GL_SRC_ALPHA, GL20.GL_ONE_MINUS_SRC_ALPHA);
 		Gdx.graphics.getGL20().glEnable(GL20.GL_BLEND);
 
 		// debugRenderer = new Box2DDebugRenderer();
@@ -78,6 +78,7 @@ public class Main extends ApplicationAdapter {
 
 		final Player player = new NarutoPlayer(0f, 0f, 20f, 20f, this.aventura.getWorld());
 		this.followedObject = player;
+		player.setzIndex(2f);
 		this.aventura.addGameObject(player);
 
 		final Pixmap pixmap = new Pixmap(64, 64, Format.RGBA8888);
@@ -137,11 +138,9 @@ public class Main extends ApplicationAdapter {
 		batch.begin();
 		// draw all aventura's pertinent objects
 		for (MaterialObject materialObject : drawableObjects) {
-			batch.draw(materialObject.getTexture(), materialObject.getX(), materialObject.getY(), materialObject.getW(),
-					materialObject.getH());
+			materialObject.draw(batch);
 			for (MaterialObject childMaterialObject : materialObject.getChildMaterialObjects()) {
-				batch.draw(childMaterialObject.getTexture(), childMaterialObject.getX(), childMaterialObject.getY(),
-						childMaterialObject.getW(), childMaterialObject.getH());
+				childMaterialObject.draw(batch);
 			}
 		}
 

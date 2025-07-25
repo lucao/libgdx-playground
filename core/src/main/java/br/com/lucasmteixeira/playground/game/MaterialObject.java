@@ -7,27 +7,37 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.Pixmap;
 import com.badlogic.gdx.graphics.Texture;
-import com.badlogic.gdx.graphics.g2d.TextureRegion;
+import com.badlogic.gdx.graphics.g2d.Sprite;
+import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 
-public abstract class MaterialObject extends GameObject {
+public abstract class MaterialObject extends GameObject implements Comparable<MaterialObject> {
 	protected Float w;
 	protected Float h;
+	
+	private Float zIndex;
 
-	protected final TextureRegion texture;
+	protected final Sprite sprite;
 
 	protected MaterialObject(Float x, Float y, Float w, Float h, Texture texture) {
 		super(x, y);
 
 		this.w = w;
 		this.h = h;
-
-		this.texture = new TextureRegion(texture);
+		this.setzIndex(0f);
+		this.sprite = new Sprite(texture);
+		this.sprite.setBounds(x, y, w, h);
+		this.sprite.setAlpha(1f);
 	}
 
-	public TextureRegion getTexture() {
-		return this.texture;
+	public void draw(SpriteBatch batch) {
+		this.sprite.setPosition(x, y);
+		this.sprite.draw(batch);
 	}
-	
+
+	public void setAlpha(float alpha) {
+		this.sprite.setAlpha(alpha);
+	}
+
 	public List<MaterialObject> getChildMaterialObjects() {
 		return Collections.emptyList();
 	}
@@ -91,4 +101,15 @@ public abstract class MaterialObject extends GameObject {
 		processed.dispose();
 		return texture;
 	}
+	
+	public void setzIndex(Float zIndex) {
+		this.zIndex = zIndex;
+	}
+	
+	@Override
+	public int compareTo(MaterialObject m) {
+		return this.zIndex.compareTo(m.zIndex);
+	}
+
+	
 }

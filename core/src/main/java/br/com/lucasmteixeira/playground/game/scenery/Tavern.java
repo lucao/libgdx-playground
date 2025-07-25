@@ -4,8 +4,9 @@ import com.badlogic.gdx.graphics.Texture;
 
 public abstract class Tavern extends Building {
 
-	protected Tavern(Float x, Float y, Float w, Float h, Texture texture) {
-		super(x, y, w, h, texture);
+	protected Tavern(Float x, Float y, Float w, Float h, Texture texture, Texture foregroundTexture,
+			Texture backgroundTexture) {
+		super(x, y, w, h, texture, foregroundTexture, backgroundTexture);
 	}
 
 }

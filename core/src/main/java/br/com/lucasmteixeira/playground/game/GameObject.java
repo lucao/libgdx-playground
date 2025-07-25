@@ -25,5 +25,5 @@ public abstract class GameObject {
 
 	public Float getY() {
 		return y;
-	}
+	}	
 }
