@@ -62,9 +62,11 @@ public abstract class Action {
 			return true;
 		if (obj == null)
 			return false;
-		if (getClass() != obj.getClass())
+		if (obj instanceof Action) {
+			Action other = (Action) obj;
+			return type == other.type;
+		} else {
 			return false;
-		Action other = (Action) obj;
-		return type == other.type;
+		}
 	}
 }

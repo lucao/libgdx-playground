@@ -13,7 +13,7 @@ public class Jump extends InstantAction {
 
 	@Override
 	public List<ActionType> getInterruptableActions() {
-		return List.of(ActionType.IDLE);
+		return List.of();
 	}
 
 }

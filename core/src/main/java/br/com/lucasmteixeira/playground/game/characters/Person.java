@@ -1,6 +1,7 @@
 package br.com.lucasmteixeira.playground.game.characters;
 
 import java.time.Instant;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -33,6 +34,7 @@ import br.com.lucasmteixeira.playground.game.characters.actions.ContinuousAction
 import br.com.lucasmteixeira.playground.game.characters.actions.Direction;
 import br.com.lucasmteixeira.playground.game.characters.actions.Idle;
 import br.com.lucasmteixeira.playground.game.characters.actions.Jump;
+import br.com.lucasmteixeira.playground.game.characters.actions.Run;
 import br.com.lucasmteixeira.playground.game.characters.actions.Stop;
 import br.com.lucasmteixeira.playground.game.characters.actions.Walk;
 import br.com.lucasmteixeira.playground.game.exceptions.UntreatedCollision;
@@ -152,6 +154,7 @@ public abstract class Person extends AnimatedMaterialObject implements Physical 
 	public void play(Instant now, Long deltaTime) {
 		final Iterator<ActionType> actionsPoolIterator = this.actionsPool.iterator();
 
+		final Set<ActionType> interruptedActions = new HashSet<ActionType>(this.actionsPool.size());
 		while (actionsPoolIterator.hasNext()) {
 			final Action actionToRun;
 			switch (actionsPoolIterator.next()) {
@@ -170,12 +173,19 @@ public abstract class Person extends AnimatedMaterialObject implements Physical 
 			case WALKING_RIGHT:
 				actionToRun = new Walk(Direction.RIGHT, now);
 				break;
+			case RUNNING_LEFT:
+				actionToRun = new Run(Direction.LEFT, now);
+				break;
+			case RUNNING_RIGHT:
+				actionToRun = new Run(Direction.RIGHT, now);
+				break;
 			default:
 				actionToRun = new Idle(now);
 				break;
 			}
 
 			for (ActionType interruptableActionType : actionToRun.getInterruptableActions()) {
+				interruptedActions.add(interruptableActionType);
 				if (this.continuousUnfinishedActions.containsKey(interruptableActionType)) {
 					this.continuousUnfinishedActions.get(interruptableActionType).finish(actionToRun.getType(),
 							now.plusMillis(deltaTime));
@@ -198,7 +208,7 @@ public abstract class Person extends AnimatedMaterialObject implements Physical 
 
 		this.actionsPool.clear();
 
-		// clear actions that are already executed TODO continue with continuous actions
+		// clear actions that are already executed
 		final Iterator<Action> runningActionsIterator = this.runningActions.iterator();
 		while (runningActionsIterator.hasNext()) {
 			Action action = runningActionsIterator.next();
@@ -225,7 +235,15 @@ public abstract class Person extends AnimatedMaterialObject implements Physical 
 		} else {
 			this.currentAnimation = AnimationType.FALLING;
 		}
+
+		String executedActions = "ações executadas: ";
+		// execute actions that are not interrupted
 		for (final Action actionToRun : this.actionsToRun) {
+			if (interruptedActions.contains(actionToRun.getType()))
+				continue;
+
+			executedActions = executedActions.concat(String.valueOf(actionToRun.getType())).concat(" ");
+
 			this.actionsHistory.add(actionToRun);
 			switch (actionToRun.getType()) {
 			case JUMP:
@@ -278,12 +296,12 @@ public abstract class Person extends AnimatedMaterialObject implements Physical 
 				}
 				break;
 			case RUNNING_RIGHT:
-				if (Direction.LEFT.equals(this.walkDirection) || Direction.NONE.equals(this.walkDirection)) {
+				if (Direction.RIGHT.equals(this.walkDirection) || Direction.NONE.equals(this.walkDirection)) {
 					deltaVelocity = (3 * NORMAL_WALK_SPEED) - Math.abs(personVelocity);
 					walkForce = this.body.getMass() * (deltaVelocity / (deltaTime.floatValue() / 1000f));
-					this.body.applyForceToCenter(new Vector2(-walkForce, 0), true);
-					this.walkDirection = Direction.LEFT;
-					this.facingDirection = Direction.LEFT;
+					this.body.applyForceToCenter(new Vector2(walkForce, 0), true);
+					this.walkDirection = Direction.RIGHT;
+					this.facingDirection = Direction.RIGHT;
 					if (grounded) {
 						this.currentAnimation = AnimationType.WALKING;
 					}
@@ -305,6 +323,7 @@ public abstract class Person extends AnimatedMaterialObject implements Physical 
 				break;
 			}
 		}
+		Gdx.app.debug("DEBUG", executedActions);
 
 		this.actionsToRun.clear();
 
@@ -327,6 +346,18 @@ public abstract class Person extends AnimatedMaterialObject implements Physical 
 		if (grounded) {
 			this.actionsPool.add(ActionType.JUMP);
 		}
+	}
+
+	public void run(Direction direction) {
+		if (Direction.RIGHT.equals(direction) && Direction.LEFT.equals(this.walkDirection)) {
+			this.actionsPool.add(ActionType.STOP_WALKING_LEFT);
+			return;
+		}
+		if (Direction.LEFT.equals(direction) && Direction.RIGHT.equals(this.walkDirection)) {
+			this.actionsPool.add(ActionType.STOP_WALKING_RIGHT);
+			return;
+		}
+		this.actionsPool.add(direction.equals(Direction.LEFT) ? ActionType.RUNNING_LEFT : ActionType.RUNNING_RIGHT);
 	}
 
 	public void walk(Direction direction) {

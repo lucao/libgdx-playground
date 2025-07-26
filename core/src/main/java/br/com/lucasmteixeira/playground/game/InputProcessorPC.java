@@ -1,5 +1,6 @@
 package br.com.lucasmteixeira.playground.game;
 
+import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.InputProcessor;
 import com.badlogic.gdx.graphics.OrthographicCamera;
@@ -27,9 +28,13 @@ public class InputProcessorPC implements InputProcessor {
 	@Override
 	public boolean keyUp(int keycode) {
 		if (keycode == Input.Keys.D) {
-			player.stop(Direction.RIGHT);
+			if (!Gdx.input.isKeyPressed(Input.Keys.A)) {
+				player.stop(Direction.RIGHT);
+			}
 		} else if (keycode == Input.Keys.A) {
-			player.stop(Direction.LEFT);
+			if (!Gdx.input.isKeyPressed(Input.Keys.D)) {
+				player.stop(Direction.LEFT);
+			}
 		}
 
 		if (keycode == Input.Keys.SPACE) {
