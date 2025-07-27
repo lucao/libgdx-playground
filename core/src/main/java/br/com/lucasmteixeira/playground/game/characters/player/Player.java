@@ -24,17 +24,18 @@ public class Player extends Person {
 	public void play(Instant now, Long deltaTime) {
 		if (Gdx.input.isKeyPressed(Input.Keys.D)) {
 			if (Gdx.input.isKeyPressed(Input.Keys.SHIFT_LEFT) || Gdx.input.isKeyPressed(Input.Keys.SHIFT_RIGHT)) {
-				this.run(Direction.RIGHT);
-			} else {
 				this.walk(Direction.RIGHT);
+			} else {
+				this.run(Direction.RIGHT);
 			}
 		} else if (Gdx.input.isKeyPressed(Input.Keys.A)) {
 			if (Gdx.input.isKeyPressed(Input.Keys.SHIFT_LEFT) || Gdx.input.isKeyPressed(Input.Keys.SHIFT_RIGHT)) {
-				this.run(Direction.LEFT);
-			} else {
 				this.walk(Direction.LEFT);
+			} else {
+				this.run(Direction.LEFT);
 			}
 		}
+
 		super.play(now, deltaTime);
 
 	}

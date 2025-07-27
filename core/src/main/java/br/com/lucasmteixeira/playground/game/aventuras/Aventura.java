@@ -8,6 +8,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Camera;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.physics.box2d.World;
@@ -72,10 +73,8 @@ public class Aventura {
 	 * @param deltaTime
 	 */
 	public List<MaterialObject> run(Camera camera, Instant now, Long deltaTime) {
-		// TODO pegar do mapa os gameobjects que são obrigados a atualizar
 
-		this.world.step(1 / 60f, 6, 2);// TODO usar deltaTime
-
+		this.world.step(1 / 60f, 6, 2);
 		/**
 		 * 0 - middle middle
 		 * <p>

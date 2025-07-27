@@ -1,7 +1,6 @@
 package br.com.lucasmteixeira.playground.game.characters;
 
 import java.time.Instant;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -67,7 +66,7 @@ public abstract class Person extends AnimatedMaterialObject implements Physical 
 	private final Map<ActionType, ContinuousAction> continuousUnfinishedActions;
 	private final Set<Action> actionsToRun;
 
-	private Direction walkDirection;
+	protected Direction walkDirection;
 
 	private Direction facingDirection;
 
@@ -81,6 +80,7 @@ public abstract class Person extends AnimatedMaterialObject implements Physical 
 		// would set it to StaticBody
 		bodyDef.type = BodyType.DynamicBody;
 		bodyDef.position.set((x + w) - w / 2, (y + h) - h / 2);
+		bodyDef.linearDamping = 0.2f;
 
 		// Create our body in the world using our body definition
 		this.body = world.createBody(bodyDef);
@@ -155,6 +155,7 @@ public abstract class Person extends AnimatedMaterialObject implements Physical 
 		final Iterator<ActionType> actionsPoolIterator = this.actionsPool.iterator();
 
 		final Set<ActionType> interruptedActions = new HashSet<ActionType>(this.actionsPool.size());
+
 		while (actionsPoolIterator.hasNext()) {
 			final Action actionToRun;
 			switch (actionsPoolIterator.next()) {
@@ -183,6 +184,8 @@ public abstract class Person extends AnimatedMaterialObject implements Physical 
 				actionToRun = new Idle(now);
 				break;
 			}
+			// TODO exceção para quando não estiver walking ou running no pool. Setar um
+			// stop automaticamente
 
 			for (ActionType interruptableActionType : actionToRun.getInterruptableActions()) {
 				interruptedActions.add(interruptableActionType);
@@ -217,9 +220,11 @@ public abstract class Person extends AnimatedMaterialObject implements Physical 
 				if (now.isAfter(action.getEnd().get())) {
 					runningActionsIterator.remove();
 				} else {
+					interruptedActions.addAll(action.getInterruptableActions());
 					this.actionsToRun.add(action);
 				}
 			} else {
+				interruptedActions.addAll(action.getInterruptableActions());
 				this.actionsToRun.add(action);
 			}
 		}
@@ -236,7 +241,8 @@ public abstract class Person extends AnimatedMaterialObject implements Physical 
 			this.currentAnimation = AnimationType.FALLING;
 		}
 
-		String executedActions = "ações executadas: ";
+		String executedActions = "ações executadas: ".concat(String.valueOf(now.getEpochSecond()).concat(" to ")
+				.concat(String.valueOf(now.getEpochSecond() + deltaTime))).concat(" ");
 		// execute actions that are not interrupted
 		for (final Action actionToRun : this.actionsToRun) {
 			if (interruptedActions.contains(actionToRun.getType()))
@@ -272,8 +278,13 @@ public abstract class Person extends AnimatedMaterialObject implements Physical 
 				}
 				break;
 			case WALKING_RIGHT:
+			case RUNNING_RIGHT:
 				if (Direction.RIGHT.equals(this.walkDirection) || Direction.NONE.equals(this.walkDirection)) {
-					deltaVelocity = NORMAL_WALK_SPEED - Math.abs(personVelocity);
+					if (((Walk) actionToRun).isRunning()) {
+						deltaVelocity = 3 * NORMAL_WALK_SPEED - Math.abs(personVelocity);
+					} else {
+						deltaVelocity = NORMAL_WALK_SPEED - Math.abs(personVelocity);
+					}
 					walkForce = this.body.getMass() * (deltaVelocity / (deltaTime.floatValue() / 1000f));
 					this.body.applyForceToCenter(new Vector2(walkForce, 0), true);
 					this.walkDirection = Direction.RIGHT;
@@ -284,32 +295,13 @@ public abstract class Person extends AnimatedMaterialObject implements Physical 
 				}
 				break;
 			case WALKING_LEFT:
-				if (Direction.LEFT.equals(this.walkDirection) || Direction.NONE.equals(this.walkDirection)) {
-					deltaVelocity = NORMAL_WALK_SPEED - Math.abs(personVelocity);
-					walkForce = this.body.getMass() * (deltaVelocity / (deltaTime.floatValue() / 1000f));
-					this.body.applyForceToCenter(new Vector2(-walkForce, 0), true);
-					this.walkDirection = Direction.LEFT;
-					this.facingDirection = Direction.LEFT;
-					if (grounded) {
-						this.currentAnimation = AnimationType.WALKING;
-					}
-				}
-				break;
-			case RUNNING_RIGHT:
-				if (Direction.RIGHT.equals(this.walkDirection) || Direction.NONE.equals(this.walkDirection)) {
-					deltaVelocity = (3 * NORMAL_WALK_SPEED) - Math.abs(personVelocity);
-					walkForce = this.body.getMass() * (deltaVelocity / (deltaTime.floatValue() / 1000f));
-					this.body.applyForceToCenter(new Vector2(walkForce, 0), true);
-					this.walkDirection = Direction.RIGHT;
-					this.facingDirection = Direction.RIGHT;
-					if (grounded) {
-						this.currentAnimation = AnimationType.WALKING;
-					}
-				}
-				break;
 			case RUNNING_LEFT:
 				if (Direction.LEFT.equals(this.walkDirection) || Direction.NONE.equals(this.walkDirection)) {
-					deltaVelocity = (3 * NORMAL_WALK_SPEED) - Math.abs(personVelocity);
+					if (((Walk) actionToRun).isRunning()) {
+						deltaVelocity = 3 * NORMAL_WALK_SPEED - Math.abs(personVelocity);
+					} else {
+						deltaVelocity = NORMAL_WALK_SPEED - Math.abs(personVelocity);
+					}
 					walkForce = this.body.getMass() * (deltaVelocity / (deltaTime.floatValue() / 1000f));
 					this.body.applyForceToCenter(new Vector2(-walkForce, 0), true);
 					this.walkDirection = Direction.LEFT;
