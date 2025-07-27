@@ -253,10 +253,11 @@ public abstract class Person extends AnimatedMaterialObject implements Physical 
 			this.actionsHistory.add(actionToRun);
 			switch (actionToRun.getType()) {
 			case JUMP:
+				//TODO check why jumping is weaker when running or walking?
 				if (now.isAfter(actionToRun.getDelay().get())) {
 					Jump jumpAction = (Jump) actionToRun;
 					if (!jumpAction.isExecuted()) {
-						this.body.applyLinearImpulse(new Vector2(0, NORMAL_JUMP_FORCE), this.body.getLocalCenter(),
+						this.body.applyLinearImpulse(new Vector2(0f, NORMAL_JUMP_FORCE), this.body.getLocalCenter(),
 								true);
 						grounded = false;
 						jumpAction.execute();
