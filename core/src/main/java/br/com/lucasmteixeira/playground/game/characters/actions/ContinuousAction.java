@@ -4,9 +4,12 @@ import java.time.Duration;
 import java.time.Instant;
 import java.util.Optional;
 
+import br.com.lucasmteixeira.playground.game.characters.actions.exceptions.ActionCantContinue;
+
 public abstract class ContinuousAction extends Action {
 	private Optional<ActionType> endActionType;
 	protected Optional<Instant> end;
+	protected final Optional<Duration> maxDuration;
 
 	protected ContinuousAction(ActionType type, Instant begin) {
 		super(type, begin);
@@ -16,7 +19,18 @@ public abstract class ContinuousAction extends Action {
 			this.end = Optional.empty();
 		}
 		this.endActionType = Optional.empty();
-
+		this.maxDuration = Optional.empty();
+	}
+	
+	protected ContinuousAction(ActionType type, Instant begin, Duration maxDuration) {
+		super(type, begin);
+		if (type.getCooldown().isPresent()) {
+			this.end = Optional.of(begin.plus(type.getCooldown().get()));
+		} else {
+			this.end = Optional.empty();
+		}
+		this.endActionType = Optional.empty();
+		this.maxDuration = Optional.of(maxDuration);
 	}
 	
 	@Override
@@ -28,8 +42,14 @@ public abstract class ContinuousAction extends Action {
 		return this.end;
 	}
 
-	public void continueAction(Instant end) {
+	public void continueAction(Instant end) throws ActionCantContinue {
+		if (this.maxDuration.isPresent()) {
+			if (Duration.between(begin, end).compareTo(this.maxDuration.get()) >= 0) {
+				throw new ActionCantContinue();
+			}
+		}
 		this.end = Optional.of(end);
+		
 	}
 
 	public void finish(ActionType endActionType, Instant end) {

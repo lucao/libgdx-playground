@@ -58,7 +58,7 @@ public class Main extends ApplicationAdapter {
 	private Player player;
 
 	public static float frameRate = 1f / 60f;
-	private static final CircularFifoQueue<Long> frameTimes = new CircularFifoQueue<Long>(4);
+	private static final CircularFifoQueue<Instant> frameTimes = new CircularFifoQueue<Instant>(10);
 
 	private boolean onStartMenu;
 	private boolean onGame;
@@ -92,7 +92,7 @@ public class Main extends ApplicationAdapter {
 		camera.update();
 		viewport = new ExtendViewport(this.VIEWPORT_WIDTH, this.VIEWPORT_HEIGHT, camera);
 
-		Main.frameTimes.add(Instant.now().getEpochSecond());
+		Main.frameTimes.add(Instant.now());
 
 		// DEBUG
 		startMenuStage = new Stage(new ScreenViewport());
@@ -118,15 +118,13 @@ public class Main extends ApplicationAdapter {
 		final Instant now = Instant.now();
 		ScreenUtils.clear(Color.DARK_GRAY);
 
-		Main.frameTimes.offer(now.toEpochMilli());
-
 		if (onStartMenu) {
-			startMenuStage.act(now.toEpochMilli() - Main.frameTimes.peek());
+			startMenuStage.act(now.toEpochMilli() - Main.frameTimes.peek().toEpochMilli());
 			startMenuStage.draw();
 		} else {
 			if (onGame == false) {
 				this.aventura = new AventuraPadrao();
-				
+
 				this.player = new NarutoPlayer(0f, 0f, 20f, 20f, this.aventura.getWorld());
 				this.followedObject = this.player;
 				this.player.setzIndex(2f);
@@ -148,7 +146,7 @@ public class Main extends ApplicationAdapter {
 				onGame = true;
 			}
 			final List<MaterialObject> drawableObjects = this.aventura.run(this.camera, now,
-					now.toEpochMilli() - Main.frameTimes.peek());
+					now.toEpochMilli() - Main.frameTimes.peek().toEpochMilli());
 
 			if (followedObject instanceof MaterialObject) {
 				MaterialObject materialFollowedObject = (MaterialObject) followedObject;
@@ -176,6 +174,9 @@ public class Main extends ApplicationAdapter {
 
 			batch.end();
 		}
+
+		Main.frameTimes.offer(now);
+		//TODO DEBUG the frameTimes
 		// DEBUG
 //		debugStage.act(Gdx.graphics.getDeltaTime());
 //		debugStage.draw();

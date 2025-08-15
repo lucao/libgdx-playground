@@ -1,9 +1,12 @@
 package br.com.lucasmteixeira.playground.game.characters;
 
+import java.time.Duration;
 import java.time.Instant;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -36,6 +39,7 @@ import br.com.lucasmteixeira.playground.game.characters.actions.Jump;
 import br.com.lucasmteixeira.playground.game.characters.actions.Run;
 import br.com.lucasmteixeira.playground.game.characters.actions.Stop;
 import br.com.lucasmteixeira.playground.game.characters.actions.Walk;
+import br.com.lucasmteixeira.playground.game.characters.actions.exceptions.ActionCantContinue;
 import br.com.lucasmteixeira.playground.game.exceptions.UntreatedCollision;
 
 public abstract class Person extends AnimatedMaterialObject implements Physical {
@@ -55,14 +59,15 @@ public abstract class Person extends AnimatedMaterialObject implements Physical 
 	protected Integer energyPoints;
 
 	protected boolean grounded;
+	private boolean canJump;
 
-	private static final Integer NORMAL_JUMP_FORCE = 15000;
+	private static final Float NORMAL_JUMP_SPEED = 100f;
 	private static final Float NORMAL_WALK_SPEED = 50f;// TODO walk
 
 	private final Set<ActionType> actionsPool;
 	private final CircularFifoQueue<Action> actionsHistory;
 
-	private final Set<Action> runningActions;
+	private final Set<ContinuousAction> runningActions;
 	private final Map<ActionType, ContinuousAction> continuousUnfinishedActions;
 	private final Set<Action> actionsToRun;
 
@@ -100,17 +105,18 @@ public abstract class Person extends AnimatedMaterialObject implements Physical 
 		personBox.dispose();
 
 		this.body.setUserData(this);
-
+		this.body.setFixedRotation(true);
 		MassData mass = new MassData();
 		mass.mass = 80.0f;
 		this.body.setMassData(mass);
 
 		this.grounded = false;
+		this.canJump = true;
 
 		this.actionsPool = new HashSet<ActionType>();
 		this.actionsHistory = new CircularFifoQueue<Action>(50);
 
-		this.runningActions = new HashSet<Action>();
+		this.runningActions = new HashSet<ContinuousAction>();
 		this.continuousUnfinishedActions = new HashMap<ActionType, ContinuousAction>();
 		this.actionsToRun = new HashSet<Action>();
 
@@ -139,6 +145,7 @@ public abstract class Person extends AnimatedMaterialObject implements Physical 
 		case GROUND:
 			Gdx.app.debug("DEBUG", "player grounded");
 			this.grounded = true;
+			this.canJump = true;
 			break;
 		case PERSON:
 			// TODO treat the object within range for interactions
@@ -149,13 +156,20 @@ public abstract class Person extends AnimatedMaterialObject implements Physical 
 		}
 	}
 
+	public static int playedTimes = 0;
+
 	// TODO add maximum velocity
 	@Override
 	public void play(Instant now, Long deltaTime) {
+		playedTimes++;
+
 		final Iterator<ActionType> actionsPoolIterator = this.actionsPool.iterator();
 
 		final Set<ActionType> interruptedActions = new HashSet<ActionType>(this.actionsPool.size());
-
+		final List<ContinuousAction> continuedActions = new ArrayList<>();
+		
+		StringBuilder finishedActions = new StringBuilder();
+		
 		while (actionsPoolIterator.hasNext()) {
 			final Action actionToRun;
 			switch (actionsPoolIterator.next()) {
@@ -186,35 +200,65 @@ public abstract class Person extends AnimatedMaterialObject implements Physical 
 			}
 			// TODO exceção para quando não estiver walking ou running no pool. Setar um
 			// stop automaticamente
-
 			for (ActionType interruptableActionType : actionToRun.getInterruptableActions()) {
 				interruptedActions.add(interruptableActionType);
 				if (this.continuousUnfinishedActions.containsKey(interruptableActionType)) {
 					this.continuousUnfinishedActions.get(interruptableActionType).finish(actionToRun.getType(),
 							now.plusMillis(deltaTime));
 					this.actionsHistory.add(this.continuousUnfinishedActions.remove(interruptableActionType));
+					
+					finishedActions.append(String.valueOf(actionToRun.getType()).concat(" - due to interrupt /"));
 				}
 			}
 
+			// continuando actions que foram relançadas desde o último frame
+			// exceção caso a action tenha passado do tempo máximo de execução
 			if (this.continuousUnfinishedActions.containsKey(actionToRun.getType())) {
-				this.continuousUnfinishedActions.get(actionToRun.getType()).continueAction(now.plusMillis(deltaTime));
+				final ContinuousAction action = this.continuousUnfinishedActions.get(actionToRun.getType());
+				try {
+					action.continueAction(now.plusMillis(deltaTime));
+					continuedActions.add((ContinuousAction) actionToRun);
+					this.actionsToRun.add(action);
+				} catch (ActionCantContinue e) {
+					action.finish(action.getType(), now);
+					
+					finishedActions.append(String.valueOf(action.getType()).concat(" - due to cant-continue exception /"));
+				}
+			} else if (actionToRun instanceof ContinuousAction) {
+				final ContinuousAction action = (ContinuousAction) actionToRun;
+				
+				this.continuousUnfinishedActions.put(action.getType(), action);
+				continuedActions.add(action);
+				if (this.runningActions.add((ContinuousAction) actionToRun)) {
+					this.actionsToRun.add(actionToRun);
+				}
+			} else {
+				this.actionsToRun.add(actionToRun);
 			}
-
-			if (!this.runningActions.add(actionToRun))
-				continue;
-
-			if (actionToRun instanceof ContinuousAction) {
-				this.continuousUnfinishedActions.put(actionToRun.getType(), (ContinuousAction) actionToRun);
-			}
-			this.actionsToRun.add(actionToRun);
 		}
 
 		this.actionsPool.clear();
 
+		// finalizando actions que não foram continuadas desde o último frame
+		List<ContinuousAction> finishedContinuousActions = new ArrayList<>(continuousUnfinishedActions.values());
+		finishedContinuousActions.removeAll(continuedActions);
+		for (ContinuousAction finishedAction : finishedContinuousActions) {
+			finishedAction.finish(finishedAction.getType(), now);
+			this.actionsHistory.add(continuousUnfinishedActions.remove(finishedAction.getType()));
+			
+			finishedActions.append(String.valueOf(finishedAction.getType()).concat(" - due to lack of continuity /"));
+
+			if (ActionType.JUMP.equals(finishedAction.getType())) {
+				this.canJump = false;
+			}
+		}
+
 		// clear actions that are already executed
-		final Iterator<Action> runningActionsIterator = this.runningActions.iterator();
+		// TODO acho que está bixando aqui, excluindo actions que não deveriam ser
+		// excluídas da execução
+		final Iterator<ContinuousAction> runningActionsIterator = this.runningActions.iterator();
 		while (runningActionsIterator.hasNext()) {
-			Action action = runningActionsIterator.next();
+			ContinuousAction action = runningActionsIterator.next();
 			if (action.getEnd().isPresent()) {
 				// action with cooldown
 				if (now.isAfter(action.getEnd().get())) {
@@ -241,8 +285,11 @@ public abstract class Person extends AnimatedMaterialObject implements Physical 
 			this.currentAnimation = AnimationType.FALLING;
 		}
 
-		String executedActions = "ações executadas: ".concat(String.valueOf(now.getEpochSecond()).concat(" to ")
-				.concat(String.valueOf(now.getEpochSecond() + deltaTime))).concat(" ");
+		Duration duration = Duration.ofMillis(deltaTime);
+		String executedActions = "acoes executadas: epoch: "
+				.concat(String.valueOf(now.toEpochMilli()).concat(" Duration: ")
+						.concat(String.valueOf(duration.toMillis())))
+				.concat(" playedTimes:").concat(String.valueOf(playedTimes)).concat(" ");
 		// execute actions that are not interrupted
 		for (final Action actionToRun : this.actionsToRun) {
 			if (interruptedActions.contains(actionToRun.getType()))
@@ -253,28 +300,26 @@ public abstract class Person extends AnimatedMaterialObject implements Physical 
 			this.actionsHistory.add(actionToRun);
 			switch (actionToRun.getType()) {
 			case JUMP:
-				//TODO check why jumping is weaker when running or walking?
-				if (now.isAfter(actionToRun.getDelay().get())) {
-					Jump jumpAction = (Jump) actionToRun;
-					if (!jumpAction.isExecuted()) {
-						this.body.applyLinearImpulse(new Vector2(0f, NORMAL_JUMP_FORCE), this.body.getLocalCenter(),
-								true);
+				// TODO check why jumping is weaker when running or walking?
+				// TODO calculate force to reach NORMAL_JUMP_SPEED
+				if (this.canJump) {
+					if (grounded) {
+						this.body.applyLinearImpulse(new Vector2(0f, 1f), this.body.getLocalCenter(), true);
 						grounded = false;
-						jumpAction.execute();
+					} else {
+						this.body.applyForceToCenter(new Vector2(0f, 1f), true);
 					}
-				} else {
-					this.body.setLinearVelocity(0f, this.body.getLinearVelocity().y);
 				}
 				break;
 			case STOP_WALKING_LEFT:
 				if (Direction.LEFT.equals(this.walkDirection) || Direction.NONE.equals(this.walkDirection)) {
-					this.body.applyForceToCenter(new Vector2(-stopForce, 0), true);
+					this.body.applyForceToCenter(new Vector2(-stopForce, 0.0f), true);
 					this.walkDirection = Direction.NONE;
 				}
 				break;
 			case STOP_WALKING_RIGHT:
 				if (Direction.RIGHT.equals(this.walkDirection) || Direction.NONE.equals(this.walkDirection)) {
-					this.body.applyForceToCenter(new Vector2(-stopForce, 0), true);
+					this.body.applyForceToCenter(new Vector2(-stopForce, 0.0f), true);
 					this.walkDirection = Direction.NONE;
 				}
 				break;
@@ -287,7 +332,7 @@ public abstract class Person extends AnimatedMaterialObject implements Physical 
 						deltaVelocity = NORMAL_WALK_SPEED - Math.abs(personVelocity);
 					}
 					walkForce = this.body.getMass() * (deltaVelocity / (deltaTime.floatValue() / 1000f));
-					this.body.applyForceToCenter(new Vector2(walkForce, 0), true);
+					this.body.applyForceToCenter(new Vector2(walkForce, 0.0f), true);
 					this.walkDirection = Direction.RIGHT;
 					this.facingDirection = Direction.RIGHT;
 					if (grounded) {
@@ -304,7 +349,7 @@ public abstract class Person extends AnimatedMaterialObject implements Physical 
 						deltaVelocity = NORMAL_WALK_SPEED - Math.abs(personVelocity);
 					}
 					walkForce = this.body.getMass() * (deltaVelocity / (deltaTime.floatValue() / 1000f));
-					this.body.applyForceToCenter(new Vector2(-walkForce, 0), true);
+					this.body.applyForceToCenter(new Vector2(-walkForce, 0.0f), true);
 					this.walkDirection = Direction.LEFT;
 					this.facingDirection = Direction.LEFT;
 					if (grounded) {
@@ -317,6 +362,7 @@ public abstract class Person extends AnimatedMaterialObject implements Physical 
 			}
 		}
 		Gdx.app.debug("DEBUG", executedActions);
+		Gdx.app.debug("DEBUG", "finished Actions: ".concat(finishedActions.toString()));
 
 		this.actionsToRun.clear();
 
@@ -336,9 +382,8 @@ public abstract class Person extends AnimatedMaterialObject implements Physical 
 	}
 
 	public void jump() {
-		if (grounded) {
-			this.actionsPool.add(ActionType.JUMP);
-		}
+		this.canJump = false;
+		this.actionsPool.add(ActionType.JUMP);
 	}
 
 	public void run(Direction direction) {
