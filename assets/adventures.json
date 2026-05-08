@@ -1,0 +1,68 @@
+[
+  {
+    "id": "test_adventure",
+    "name": "Test Adventure",
+    "description": "A simple test path to walk and jump.",
+    "act": 1,
+    "prerequisites": [],
+    "outcomes": [],
+    "sceneType": "TEST",
+    "mapX": 0.75,
+    "mapY": 0.75
+  },
+  {
+    "id": "adv_001",
+    "name": "The Burning Bridge",
+    "description": "A bridge is under attack. Save it or let it burn.",
+    "act": 1,
+    "prerequisites": [],
+    "outcomes": ["bridge_saved", "bridge_destroyed"],
+    "sceneType": "2D",
+    "mapX": 0.25,
+    "mapY": 0.55
+  },
+  {
+    "id": "adv_002",
+    "name": "The Sunken Tavern",
+    "description": "Strange things happen in the old tavern.",
+    "act": 1,
+    "prerequisites": [],
+    "outcomes": ["tavern_cleared", "tavern_burned"],
+    "sceneType": "ISO",
+    "mapX": 0.55,
+    "mapY": 0.60
+  },
+  {
+    "id": "adv_003",
+    "name": "Ruins of the Old Keep",
+    "description": "The keep holds secrets from the war.",
+    "act": 2,
+    "prerequisites": ["bridge_saved"],
+    "outcomes": ["keep_explored", "keep_collapsed"],
+    "sceneType": "ISO",
+    "mapX": 0.40,
+    "mapY": 0.35
+  },
+  {
+    "id": "adv_004",
+    "name": "Aftermath: The Ash Road",
+    "description": "The road through the ashes of the bridge.",
+    "act": 2,
+    "prerequisites": ["bridge_destroyed"],
+    "outcomes": ["ash_road_cleared"],
+    "sceneType": "2D",
+    "mapX": 0.20,
+    "mapY": 0.40
+  },
+  {
+    "id": "adv_005",
+    "name": "The Iron Dungeon",
+    "description": "Deep underground, something stirs.",
+    "act": 3,
+    "prerequisites": ["keep_explored"],
+    "outcomes": ["dungeon_cleared", "dungeon_sealed"],
+    "sceneType": "ISO",
+    "mapX": 0.65,
+    "mapY": 0.25
+  }
+]

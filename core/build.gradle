@@ -1,5 +1,7 @@
 [compileJava, compileTestJava]*.options*.encoding = 'UTF-8'
 eclipse.project.name = appName + '-core'
+java.sourceCompatibility = 21
+java.targetCompatibility = 21
 
 dependencies {
   api "com.badlogicgames.ashley:ashley:$ashleyVersion"
@@ -8,6 +10,8 @@ dependencies {
   api "com.badlogicgames.gdx:gdx-ai:$aiVersion"
   api "com.badlogicgames.gdx:gdx-box2d:$gdxVersion"
   api "com.badlogicgames.gdx:gdx:$gdxVersion"
+  api "com.google.code.gson:gson:$gsonVersion"
+  api "io.netty:netty-all:$nettyVersion"
   
 	// https://mvnrepository.com/artifact/org.apache.commons/commons-collections4
 	implementation("org.apache.commons:commons-collections4:4.5.0")

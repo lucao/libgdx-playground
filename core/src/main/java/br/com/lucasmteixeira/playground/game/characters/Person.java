@@ -8,6 +8,7 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 
 import org.apache.commons.collections4.queue.CircularFifoQueue;
@@ -163,13 +164,27 @@ public abstract class Person extends AnimatedMaterialObject implements Physical 
 	public void play(Instant now, Long deltaTime) {
 		playedTimes++;
 
+		StringBuilder pooledActions = new StringBuilder();
+		for (ActionType pooledAction : actionsPool) {
+			pooledActions.append(pooledAction);
+		}
+		StringBuilder continuousUnfinishedActionsDebugLOG = new StringBuilder();
+		for (Entry<ActionType, ContinuousAction> continuousUnfinishedAction : this.continuousUnfinishedActions
+				.entrySet()) {
+			continuousUnfinishedActionsDebugLOG.append(String.valueOf(continuousUnfinishedAction.getKey()).concat(" ")
+					.concat(String.valueOf(continuousUnfinishedAction.getValue().getEnd().orElse(Instant.EPOCH).toEpochMilli())));
+		}
+		Gdx.app.debug("DEBUG", "\n");
+		Gdx.app.debug("DEBUG", "actions pooled ".concat(pooledActions.toString()));
+		Gdx.app.debug("DEBUG", "actions that are not finished ".concat(continuousUnfinishedActionsDebugLOG.toString()));
+
 		final Iterator<ActionType> actionsPoolIterator = this.actionsPool.iterator();
 
 		final Set<ActionType> interruptedActions = new HashSet<ActionType>(this.actionsPool.size());
 		final List<ContinuousAction> continuedActions = new ArrayList<>();
-		
+
 		StringBuilder finishedActions = new StringBuilder();
-		
+
 		while (actionsPoolIterator.hasNext()) {
 			final Action actionToRun;
 			switch (actionsPoolIterator.next()) {
@@ -198,39 +213,54 @@ public abstract class Person extends AnimatedMaterialObject implements Physical 
 				actionToRun = new Idle(now);
 				break;
 			}
-			// TODO exceção para quando não estiver walking ou running no pool. Setar um
-			// stop automaticamente
+
+			// interrompendo ações que deveriam estar sendo continuadas
 			for (ActionType interruptableActionType : actionToRun.getInterruptableActions()) {
 				interruptedActions.add(interruptableActionType);
 				if (this.continuousUnfinishedActions.containsKey(interruptableActionType)) {
-					this.continuousUnfinishedActions.get(interruptableActionType).finish(actionToRun.getType(),
-							now.plusMillis(deltaTime));
+					this.continuousUnfinishedActions.get(interruptableActionType).finish(actionToRun.getType(), now);
 					this.actionsHistory.add(this.continuousUnfinishedActions.remove(interruptableActionType));
-					
-					finishedActions.append(String.valueOf(actionToRun.getType()).concat(" - due to interrupt /"));
+
+					finishedActions.append(String.valueOf(interruptableActionType).concat(" - due to interrupt /"));
+				} else {
+					this.actionsToRun.add(actionToRun);
 				}
 			}
-
-			// continuando actions que foram relançadas desde o último frame
-			// exceção caso a action tenha passado do tempo máximo de execução
+			
+			
+			
+			// continuando ações que foram reexecutadas ou que não terminaram de executar
 			if (this.continuousUnfinishedActions.containsKey(actionToRun.getType())) {
 				final ContinuousAction action = this.continuousUnfinishedActions.get(actionToRun.getType());
-				try {
-					action.continueAction(now.plusMillis(deltaTime));
-					continuedActions.add((ContinuousAction) actionToRun);
-					this.actionsToRun.add(action);
-				} catch (ActionCantContinue e) {
+				if (action.getEnd().isPresent() && now.isAfter(action.getEnd().get())) {
 					action.finish(action.getType(), now);
+					this.actionsHistory.add(this.continuousUnfinishedActions.remove(action.getType()));
 					
-					finishedActions.append(String.valueOf(action.getType()).concat(" - due to cant-continue exception /"));
+					if (ActionType.JUMP.equals(action.getType())) {
+						this.canJump = false;
+					}
+
+					finishedActions
+							.append(String.valueOf(action.getType()).concat(" - due to cant-continue exception /"));
+				} else {
+					continuedActions.add(action);
+					this.actionsToRun.add(action);
 				}
 			} else if (actionToRun instanceof ContinuousAction) {
 				final ContinuousAction action = (ContinuousAction) actionToRun;
+				this.actionsToRun.add(action);
 				
-				this.continuousUnfinishedActions.put(action.getType(), action);
-				continuedActions.add(action);
-				if (this.runningActions.add((ContinuousAction) actionToRun)) {
-					this.actionsToRun.add(actionToRun);
+				if (action.getEnd().isPresent() && now.isAfter(action.getEnd().get())) {
+					action.finish(action.getType(), now);
+
+					if (ActionType.JUMP.equals(action.getType())) {
+						this.canJump = false;
+					}
+
+					finishedActions.append(String.valueOf(action.getType()).concat(" - due to lack of continuity /"));
+				} else {
+					continuedActions.add(action);
+					this.continuousUnfinishedActions.put(action.getType(), action);
 				}
 			} else {
 				this.actionsToRun.add(actionToRun);
@@ -240,38 +270,34 @@ public abstract class Person extends AnimatedMaterialObject implements Physical 
 		this.actionsPool.clear();
 
 		// finalizando actions que não foram continuadas desde o último frame
-		List<ContinuousAction> finishedContinuousActions = new ArrayList<>(continuousUnfinishedActions.values());
-		finishedContinuousActions.removeAll(continuedActions);
-		for (ContinuousAction finishedAction : finishedContinuousActions) {
-			finishedAction.finish(finishedAction.getType(), now);
-			this.actionsHistory.add(continuousUnfinishedActions.remove(finishedAction.getType()));
-			
-			finishedActions.append(String.valueOf(finishedAction.getType()).concat(" - due to lack of continuity /"));
-
-			if (ActionType.JUMP.equals(finishedAction.getType())) {
-				this.canJump = false;
-			}
-		}
+		/*
+		 * List<ContinuousAction> finishedContinuousActions = new
+		 * ArrayList<>(continuousUnfinishedActions.values());
+		 * finishedContinuousActions.removeAll(continuedActions); for (ContinuousAction
+		 * finishedAction : finishedContinuousActions) {
+		 * finishedAction.finish(finishedAction.getType(), now);
+		 * this.actionsHistory.add(continuousUnfinishedActions.remove(finishedAction.
+		 * getType()));
+		 * 
+		 * finishedActions.append(String.valueOf(finishedAction.getType()).
+		 * concat(" - due to lack of continuity /"));
+		 * 
+		 * if (ActionType.JUMP.equals(finishedAction.getType())) { this.canJump = false;
+		 * } }
+		 */
 
 		// clear actions that are already executed
-		// TODO acho que está bixando aqui, excluindo actions que não deveriam ser
-		// excluídas da execução
-		final Iterator<ContinuousAction> runningActionsIterator = this.runningActions.iterator();
-		while (runningActionsIterator.hasNext()) {
-			ContinuousAction action = runningActionsIterator.next();
-			if (action.getEnd().isPresent()) {
-				// action with cooldown
-				if (now.isAfter(action.getEnd().get())) {
-					runningActionsIterator.remove();
-				} else {
-					interruptedActions.addAll(action.getInterruptableActions());
-					this.actionsToRun.add(action);
-				}
-			} else {
-				interruptedActions.addAll(action.getInterruptableActions());
-				this.actionsToRun.add(action);
-			}
-		}
+		/*
+		 * final Iterator<ContinuousAction> runningActionsIterator =
+		 * this.runningActions.iterator(); while (runningActionsIterator.hasNext()) {
+		 * ContinuousAction action = runningActionsIterator.next(); if
+		 * (action.getEnd().isPresent()) { // action with cooldown if
+		 * (now.isAfter(action.getEnd().get())) { runningActionsIterator.remove(); }
+		 * else { interruptedActions.addAll(action.getInterruptableActions());
+		 * this.actionsToRun.add(action); } } else {
+		 * interruptedActions.addAll(action.getInterruptableActions());
+		 * this.actionsToRun.add(action); } }
+		 */
 
 		final float personVelocity = this.body.getLinearVelocity().x;
 		float deltaVelocity;

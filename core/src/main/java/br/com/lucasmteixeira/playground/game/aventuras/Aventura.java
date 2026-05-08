@@ -21,7 +21,7 @@ public class Aventura {
 	protected final Map<KeyQuadrante, ArrayList<GameObject>> mapGameObjects;
 	protected final World world;
 
-	protected Aventura() {
+	public Aventura() {
 		this.mapGameObjects = new HashMap<KeyQuadrante, ArrayList<GameObject>>();
 		this.world = new World(new Vector2(0, -160), true);
 
